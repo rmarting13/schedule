@@ -5,7 +5,7 @@ from etiqueta import Etiqueta
 class EtiquetaDao:
     """
     Contiene los métodos que permiten ejecutar el CRUD sobre la tabla etiquetas de la base de datos
-    DAO (Data Acces Object)
+    DAO (Data Access Object)
     CRUD (Create-Read-Update-Delete)
     """
     _SELECCIONAR = 'SELECT * FROM etiquetas ORDER BY id_etiqueta'
@@ -21,6 +21,8 @@ class EtiquetaDao:
             etiquetas = []
             for reg in registros:
                 etiquetas.append(Etiqueta(reg[0], reg[1]))
+            return etiquetas
+
     @classmethod
     def insertar(cls, etiqueta: Etiqueta):
         with Cursor() as cursor:
@@ -43,3 +45,4 @@ class EtiquetaDao:
             values = (etiqueta.id_etiqueta,)
             cursor.execute(cls._ELIMINAR, values)
             print(f'Etiqueta eliminada: {etiqueta}')
+            return cursor.rowcount

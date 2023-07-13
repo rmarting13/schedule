@@ -6,4 +6,6 @@ conn = mysql.connector.connect(
     database='calendario'
 )
 
+
 conn.close()
+print(conn)

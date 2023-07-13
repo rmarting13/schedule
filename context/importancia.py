@@ -1,5 +1,5 @@
 class Importancia:
-    def __init__(self, id_importancia: int, nombre: str):
+    def __init__(self, nombre: str, id_importancia=None):
         self._id_importancia = id_importancia
         self._nombre = nombre
 

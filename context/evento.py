@@ -1,13 +1,13 @@
 class Evento:
-    def __init__(self, id_evento: int, titulo: str, descripcion: str, fecha_hora: str, etiquetas, recordatorio,
-                 importancia):
+    def __init__(self, titulo, fecha_hora, duracion, id_importancia,
+                 descripcion=None,  recordatorio=None, id_evento=None):
         self._id_evento = id_evento
         self._titulo = titulo
         self._descripcion = descripcion
         self._fecha_hora = fecha_hora
-        self._etiquetas = etiquetas
-        self._recordatorio = recordatorio,
-        self._importancia = importancia
+        self._duracion = duracion
+        self._recordatorio = recordatorio
+        self._id_importancia = id_importancia
 
     @property
     def id_evento(self):
@@ -42,12 +42,12 @@ class Evento:
         self._fecha_hora = value
 
     @property
-    def etiquetas(self):
-        return self._etiquetas
+    def duracion(self):
+        return self._duracion
 
-    @etiquetas.setter
-    def etiquetas(self, value):
-        self._etiquetas = value
+    @duracion.setter
+    def duracion(self, value):
+        self._duracion = value
 
     @property
     def recordatorio(self):
@@ -58,17 +58,17 @@ class Evento:
         self._recordatorio = value
 
     @property
-    def importancia(self):
-        return self._importancia
+    def id_importancia(self):
+        return self._id_importancia
 
-    @importancia.setter
-    def importancia(self, value):
-        self._importancia = value
+    @id_importancia.setter
+    def id_importancia(self, value):
+        self._id_importancia = value
 
     def __str__(self):
         return f'''
                     Id evento: {self._id_evento}, Titulo: {self._titulo},
                     Descripción: {self._descripcion}, Fecha y hora: {self._fecha_hora},
-                    Etiquetas: {self._etiquetas}, Recordatorio: {self._recordatorio},
-                    Importancia: {self._importancia}
+                    Duración: {self._duracion} minutos,
+                    Recordatorio: {self._recordatorio}, Importancia: {self._id_importancia}
                 '''
