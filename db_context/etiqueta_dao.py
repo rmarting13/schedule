@@ -1,5 +1,5 @@
 from cursor import Cursor
-from etiqueta import Etiqueta
+from models.etiqueta import Etiqueta
 
 
 class EtiquetaDao:
@@ -46,3 +46,28 @@ class EtiquetaDao:
             cursor.execute(cls._ELIMINAR, values)
             print(f'Etiqueta eliminada: {etiqueta}')
             return cursor.rowcount
+
+if __name__ == '__main__':
+    pass
+    # INSERTAR
+    # et1 = Etiqueta(nombre='test')
+    # insertadas = EtiquetaDao.insertar(et1)
+    # print(f'Etiquetas insertadas: {insertadas}')
+    # et2 = Etiqueta(nombre='estudiar')
+    # insertadas = EtiquetaDao.insertar(et2)
+    # print(f'Etiquetas insertadas: {insertadas}')
+
+    #ACTUALIZAR
+    # et1 = Etiqueta(id_etiqueta=1, nombre='examen')
+    # actualizadas = EtiquetaDao.actualizar(et1)
+    # print(f'Etiquetas actualizadas: {actualizadas}')
+
+    #ELIMINAR
+    et1 = Etiqueta(id_etiqueta=2, nombre='estudiar')
+    eliminadas = EtiquetaDao.eliminar(et1)
+    print(f'Etiquetas eliminadas: {eliminadas}')
+
+    #SELECCIONAR
+    datos = EtiquetaDao.seleccionar()
+    for dato in datos:
+       print(dato)

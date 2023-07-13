@@ -2,8 +2,12 @@ import tkinter as tk
 from tkinter import ttk
 from PIL import ImageTk, Image
 from datetime import datetime
-import Vistas
 from Archivo import BaseDeDatos
+from views.busqueda import FiltroDeEventos
+from views.mensual import VistaMensual
+from views.nuevo_evento import NuevoEventoVista
+from views.popup import PopUp
+from views.semanal import VistaSemanal
 
 # Configuración de los colores de la interfaz según el tema
 awdark = {'bgNombreDia': '#000',
@@ -104,7 +108,7 @@ class App(ttk.Frame):
         self.__rightFrame.destroy()
         self.__rightFrame = ttk.Frame(self, padding=5, borderwidth=2, relief="groove")
         ttk.Label(self.__rightFrame, text='Vista Semanal', font=('Century Gothic', '30')).grid(column=0, row=0, pady=10)
-        self.__frameSem = Vistas.VistaSemanal(self.__rightFrame, self)
+        self.__frameSem = VistaSemanal(self.__rightFrame, self)
         self.__rightFrame.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
         self.__btnVistaSem['state'] = 'disabled'
         self.__btnBuscar['state'] = 'enabled'
@@ -120,7 +124,7 @@ class App(ttk.Frame):
         self.__frameFiltro = None
         self.__rightFrame.destroy()
         self.__rightFrame = ttk.Frame(self, padding=0, borderwidth=2, relief="groove")
-        self.__frameMen = Vistas.VistaMensual(self.__rightFrame, self)
+        self.__frameMen = VistaMensual(self.__rightFrame, self)
         self.__rightFrame.grid(column=1, row=0, rowspan=3, padx=0, pady=0)
         self.__btnVistaSem['state'] = 'enabled'
         self.__btnBuscar['state'] = 'enabled'
@@ -134,7 +138,7 @@ class App(ttk.Frame):
         self.__rightFrame.destroy()
         self.__rightFrame = ttk.Frame(self, padding=5, borderwidth=2, relief="groove")
         ttk.Label(self.__rightFrame, text=txt, font=('Century Gothic', '30')).grid(column=0, row=0, pady=10)
-        Vistas.NuevoEventoVista(self.__rightFrame, self).grid()
+        NuevoEventoVista(self.__rightFrame, self).grid()
         self.__rightFrame.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
         self.__btnNuevo['state'] = 'disabled'
         self.__btnVistaSem['state'] = 'enabled'
@@ -156,7 +160,7 @@ class App(ttk.Frame):
         self.__rightFrame.destroy()
         self.__rightFrame = ttk.Frame(self, padding=5, borderwidth=2, relief="groove")
         ttk.Label(self.__rightFrame, text='Búsqueda', font=('Century Gothic', '30')).grid(column=0, row=0, pady=10)
-        self.__frameFiltro = Vistas.FiltroDeEventos(self.__rightFrame, self)
+        self.__frameFiltro = FiltroDeEventos(self.__rightFrame, self)
         self.__rightFrame.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
         self.__btnBuscar['state'] = 'disabled'
         self.__btnVistaMen['state'] = 'enabled'
@@ -174,7 +178,7 @@ class App(ttk.Frame):
         la tabla de eventos de alguna vista (Mensual, Semanal, Búsqueda), luego actualiza la vista que se 
         encuentre activa en ese momento."""
         self.db.borrarEvento(self.selectID)
-        Vistas.PopUp(self).mensaje('Evento eliminado con éxito!')
+        PopUp(self).mensaje('Evento eliminado con éxito!')
         if self.__frameFiltro != None:
             self.__frameFiltro.actualizar()
         if self.__frameSem != None:
@@ -199,7 +203,7 @@ class App(ttk.Frame):
                   background=[('!active', '#6a20a2'), ('pressed', '#4a1572'), ('active', '#a046e5')])
             self.__primerInicio = False
         else:
-            opt = Vistas.PopUp(self).advertencia()
+            opt = PopUp(self).advertencia()
             if opt == True:
                 s.theme_use(self.nombreTema.get())
                 if self.nombreTema.get() == 'awdark':

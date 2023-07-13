@@ -1,5 +1,5 @@
 from cursor import Cursor
-from evento import Evento
+from models.evento import Evento
 
 
 class EventoDao:

@@ -1,5 +1,5 @@
 from cursor import Cursor
-from importancia import Importancia
+from models.importancia import Importancia
 
 
 class ImportanciaDao:
