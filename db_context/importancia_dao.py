@@ -1,4 +1,4 @@
-from cursor import Cursor
+from db_context.cursor import Cursor
 from models.importancia import Importancia
 
 
@@ -20,7 +20,7 @@ class ImportanciaDao:
             registros = cursor.fetchall()
             importancias = []
             for reg in registros:
-                importancias.append(Importancia(reg[0], reg[1]))
+                importancias.append(Importancia(id_importancia=reg[0], nombre=reg[1]))
             return importancias
     @classmethod
     def insertar(cls, importancia: Importancia):

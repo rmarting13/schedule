@@ -4,7 +4,13 @@ from tkinter import ttk, END, messagebox
 from datetime import datetime
 from calendar import Calendar
 from tkcalendar import Calendar as tkCalendar
-from Archivo import BaseDeDatos
+
+from db_context.etiqueta_dao import EtiquetaDao
+from db_context.evento_dao import EventoDao
+from db_context.eventos_etiquetas_dao import EventoEtiquetaDao
+from db_context.importancia_dao import ImportanciaDao
+from models.etiqueta import Etiqueta
+from models.evento import Evento
 from views.popup import PopUp
 
 
@@ -17,13 +23,15 @@ class NuevoEventoVista(ttk.Frame):
         self.grid(column=0, row=1, sticky=(tk.N, tk.S, tk.E, tk.W))
         parent.columnconfigure(0, weight=1)
         parent.rowconfigure(0, weight=1)
-        self.__db = BaseDeDatos('EventosDB.csv')
         self.__ventanaCal = None
         self.__tamTag = 0
         self.__rowTag = 0
         self.__columnTag = -1
         self.__listaEtiquetas = []
-        self.__id = ''
+        self.__tags_in_db = list(map(lambda x: (x.id_etiqueta, x.nombre),EtiquetaDao.seleccionar()))
+        self.__tags_in_db_nombres = list(map(lambda x: x.nombre, EtiquetaDao.seleccionar()))
+        self.__importancia_options = list(
+            map(lambda x: str(x.id_importancia) + ' ' + x.nombre, ImportanciaDao.seleccionar()))
         self.__titulo = tk.StringVar()
         self.__importancia = tk.StringVar()
         self.__fecha = tk.StringVar()
@@ -35,17 +43,20 @@ class NuevoEventoVista(ttk.Frame):
         self.__mRecor = tk.StringVar()
         self.__etiqueta = tk.StringVar()
         self.__checkValue = tk.StringVar()
-        if self.__guiParent.selectID != None:
-            existente = self.__db.filtrarPorID(self.__guiParent.selectID)
-            self.__id = existente['ID']
-            self.__titulo.set(existente['TITULO'])
-            self.__descripcion = existente['DESCRIPCION']
-            self.__importancia.set(existente['IMPORTANCIA'])
-            self.__fecha.set(existente['FECHA'])
-            self.__duracion.set(existente['DURACION'])
-            self.__hHora.set(existente['HORA'][:2])
-            self.__mHora.set(existente['HORA'][3:])
+        self.__selectedOptionId = None
+        if self.__guiParent.selectID:
+            self.__eventoActual = EventoDao.seleccionar_id(id_evento=self.__guiParent.selectID)
+            fecha, hora = self.__eventoActual['fecha_hora'].split(' ')
+            self.__id = self.__eventoActual['id_evento']
+            self.__titulo.set(self.__eventoActual['titulo'])
+            self.__descripcion = self.__eventoActual['descripcion']
+            self.__importancia.set(self.__eventoActual['id_importancia'])
+            self.__fecha.set(fecha)
+            self.__duracion.set(self.__eventoActual['duracion'])
+            self.__hHora.set(hora[:2])
+            self.__mHora.set(hora[3:5])
         else:
+            self.__id = None
             self.__descripcion = ''
             self.__inputDesc = None
             self.__tagFrame = None
@@ -94,8 +105,9 @@ class NuevoEventoVista(ttk.Frame):
                                                                                                           columnspan=1,
                                                                                                           sticky=(tk.E),
                                                                                                           pady=5)
+
         self.__inputImp = ttk.Combobox(self.__block1, textvariable=self.__importancia, font=('Ubuntu', '11', 'bold'),
-                                       values=['Importante', 'Normal'], justify='center')
+                                       values=self.__importancia_options, justify='center')
         self.__inputImp.set(self.__importancia.get())
         self.__inputImp.config(state='readonly', width=12)
         self.__inputImp.grid(column=1, row=4, columnspan=1, sticky=(tk.E), pady=5)
@@ -113,11 +125,17 @@ class NuevoEventoVista(ttk.Frame):
         self.__lblTagsRest = ttk.Label(self.__block1, text='5', font=('Ubuntu', '12', 'bold'),
                                        foreground=self.__guiParent.configTema['Tags'], padding=5)
         self.__lblTagsRest.grid(column=1, row=6, columnspan=1, sticky=tk.W)
-        self.__inputTag = ttk.Entry(self.__block1, font=('Ubuntu', '11'), width=35, textvariable=self.__etiqueta,
-                                    justify='right')
+        # self.__inputTag = ttk.Entry(self.__block1, font=('Ubuntu', '11'), width=35, textvariable=self.__etiqueta,
+        #                             justify='right')
+        self.__inputTag = ttk.Combobox(self.__block1, font=('Ubuntu', '11', 'bold'),
+                                       width=35, textvariable=self.__etiqueta, justify='right')
         self.__inputTag.grid(column=1, row=5, columnspan=1, sticky=(tk.E), pady=5)
-        if self.__guiParent.selectID != None:
-            tags = self.__db.filtrarPorID(self.__guiParent.selectID)['ETIQUETA'].split(sep=', ')
+        self.__inputTag.bind('<KeyRelease>', self.update)
+        self.__inputTag.bind("<<ComboboxSelected>>", self.callback)
+        self.__inputTag.grid(column=1, row=5, columnspan=1, sticky=(tk.E), pady=5)
+
+        if self.__guiParent.selectID:
+            tags = self.__eventoActual['etiquetas'].split(sep=',')
             for tag in tags:
                 self.__etiqueta.set(tag)
                 self.__agregarEtiqueta()
@@ -158,8 +176,8 @@ class NuevoEventoVista(ttk.Frame):
                                                                                                        sticky=(tk.E),
                                                                                                        pady=5)
         self.__inputDura = ttk.Combobox(self.__block2, font=('Ubuntu', '11', 'bold'), textvariable=self.__duracion,
-                                        values=['1 hora', '3 horas', '6 horas', '8 horas', '12 horas', 'Todo el día'],
-                                        justify='center')
+                        values=['30 min', '1 hora', ' horas', '6 horas', '8 horas', '12 horas', 'Todo el día'],
+                        justify='center')
         self.__inputDura.config(state='readonly', width=12)
         self.__inputDura.grid(column=1, row=2, columnspan=1, sticky=(tk.E), pady=5)
 
@@ -194,6 +212,22 @@ class NuevoEventoVista(ttk.Frame):
         separator.grid(column=1, row=0, rowspan=2, padx=5, sticky=tk.EW)
         self.__block2.grid(column=2, row=0, rowspan=2)
         self.__mainBlock.grid(column=0, row=0)
+
+    def update(self, *args):
+        options = []
+        typed = self.__inputTag.get()
+        if typed == '':
+            tags = self.__tags_in_db
+        else:
+            tags = EtiquetaDao.seleccionar_nombre(typed)
+        self.__inputTag['values'] = list(map(lambda x: str(x[0])+' '+x[1], tags))
+        self.__inputTag.event_generate('<Down>')
+        self.__inputTag.after(100, self.__inputTag.focus_set)
+
+    def callback(self,e):
+        selection = self.__inputTag.selection_get().split(' ')
+        self.__inputTag.set(selection[1])
+        self.__selectedOptionId = int(selection[0])
 
     def actualizar(self):
         self.__cargarComponentes()
@@ -260,7 +294,7 @@ class NuevoEventoVista(ttk.Frame):
 
     def __desplegarCalendarioSeleccionable(self, tipo):
         """Genera gráficamente la interfaz de un calendario que permite explorar y seleccionar fechas."""
-        self.__ventanaCal = tkCalendar(self.__mainBlock, selectmode="day", date_pattern="dd/mm/y")
+        self.__ventanaCal = tkCalendar(self.__mainBlock, selectmode="day", date_pattern="y-mm-dd")
         self.__ventanaCal.grid(column=3, row=0, columnspan=2, padx=5, pady=5, sticky=tk.S)
         self.__btnSel = ttk.Button(self.__mainBlock, text="Seleccionar", command=tipo)
         self.__btnSel.grid(column=3, row=1, pady=5, padx=5, sticky=tk.NE)
@@ -295,26 +329,52 @@ class NuevoEventoVista(ttk.Frame):
     def __enviarEvento(self):
         """Recoge y almacena en un diccionario todos los strings obenidos de los widgets de la interfaz, enviándolo
         a un objeto de la clase BaseDeDatos para grabar los datos del evento o modificar uno existente."""
-        fecha = self.__fecha.get();
-        hora = self.__hHora.get() + ':' + self.__mHora.get()
+        fecha = self.__fecha.get()
+        hora = self.__hHora.get() + ':' + self.__mHora.get()+':00'
         if self.__validarFechaYHora(fecha, hora):
-            tags = ", ".join(self.__listaEtiquetas)
+            #tags = ", ".join(self.__listaEtiquetas)
             if self.__checkValue.get() == '1':
-                stringRecor = self.__fechaRecor.get() + ' - ' + self.__hRecor.get() + ':' + self.__mRecor.get()
+                stringRecor = self.__fechaRecor.get()+' '+self.__hRecor.get()+':'+self.__mRecor.get()+':00'
             else:
-                stringRecor = 'No'
-            datos = {
-                'ID': self.__id,
-                'TITULO': self.__titulo.get(),
-                'DESCRIPCION': self.__inputDesc.get("1.0", "end-1c"),
-                'IMPORTANCIA': self.__importancia.get(),
-                'FECHA': self.__fecha.get(),
-                'HORA': self.__hHora.get() + ':' + self.__mHora.get(),
-                'DURACION': self.__duracion.get(),
-                'ETIQUETA': tags,
-                'RECORDATORIO': stringRecor
+                stringRecor = None
+            dur = int(self.__duracion.get().split(' ')[0])
+            duracion_en_min = dur*60 if dur != 30 else 30
+            values = {
+                'id_evento': self.__id,
+                'titulo': self.__titulo.get(),
+                'descripcion': self.__inputDesc.get("1.0", "end-1c"),
+                'id_importancia': int(self.__importancia.get().split(' ')[0]),
+                'fecha_hora': self.__fecha.get()+' '+self.__hHora.get()+':'+self.__mHora.get()+':00',
+                'duracion': duracion_en_min,
+                'etiquetas': None,
+                'recordatorio': stringRecor
             }
-            self.__db.grabarDato(datos)
+            evento = Evento(**values)
+            print(f'ALL TAGS: {self.__listaEtiquetas}')
+            old_tags = list(filter(lambda tg: tg[0] != 0, self.__listaEtiquetas))
+            new_tags = list(filter(lambda tg: tg[0] == 0, self.__listaEtiquetas))
+            print(f'OLD TAGS: {old_tags}')
+            print(f'NEW TAGS: {new_tags}')
+            if self.__guiParent.selectID: # actualización de un evento existente
+                id_evento = EventoDao.actualizar(evento)
+                tags_on_db = list(map(lambda x: x[1], EventoEtiquetaDao.seleccionar(id_evento)))
+                # relaciones_actuales = list(map(lambda x: (id_evento, x[0]), self.__listaEtiquetas))
+                if sorted(old_tags) != sorted(tags_on_db):  # pregunta si se eliminaron etiquetas al actualizar
+                    delete_tags = list(filter(lambda tg: tg not in old_tags, tags_on_db))
+                    for tag in delete_tags:  # se eliminan las relaciones de la tabla eventos_etiquetas en la db
+                        EventoEtiquetaDao.eliminar(id_evento=id_evento, id_etiqueta=tag)
+            else:  # Creación de un evento nuevo
+                id_evento = EventoDao.insertar(evento)
+                if len(old_tags) > 0:  # si se seleccionaron etiquetas existentes
+                    map(lambda x: EventoEtiquetaDao.insertar(id_evento=id_evento, id_etiqueta=x), old_tags)
+            print(f'CANTIDAD DE ETIQUETAS NUEVAS: {len(new_tags)}')
+            if len(new_tags) > 0: # si se crearon nuevas etiquetas (se ejecuta tanto para actualización como nuevo evento)
+                id_etiquetas_insertadas = list(map(lambda x: EtiquetaDao.insertar(Etiqueta(nombre=x[1])), new_tags))  # etiqueta nueva
+                print('ID ETIQUETAS INSERTADAS: '+str(id_etiquetas_insertadas))
+                map(lambda x: EventoEtiquetaDao.insertar(id_evento=id_evento, id_etiqueta=x), id_etiquetas_insertadas)  # nuevas relaciones en la tabla eventos_etiquetas
+
+
+
             PopUp(self).mensaje('Evento agregado con éxito!')
             self.__limpiarCampos()
 
@@ -331,9 +391,12 @@ class NuevoEventoVista(ttk.Frame):
         """Determina si la fecha seleccionada del evento seleccionada por el usuario, coincide o nó con algún evento ya existente.
         En caso de ser cierto, ejecuta una ventana emergente con un cuadro de diálogo indicandole al usuario la situación."""
         if self.__guiParent.selectID == None:
-            rdo = (fecha, hora) not in self.__db.mapearFechasYHoras()
-            if not rdo:
+            value = fecha+' '+hora
+            if EventoDao.eixiste_fecha_hora(fecha_hora=value):
+                rdo = False
                 PopUp(self).mensaje('Ya existe un evento en la misma fecha y hora.\nPor favor elija otra fecha/hora.')
+            else:
+                rdo = True
         else:
             rdo = True
         return rdo
@@ -343,13 +406,12 @@ class NuevoEventoVista(ttk.Frame):
         por modificación de un evento."""
         self.__titulo.set('')
         self.__descripcion = ''
-        self.__importancia.set('')
-        self.__fecha.set(datetime.today().strftime('%d/%m/%Y'))
+        self.__importancia.set(self.__importancia_options[0])
+        self.__fecha.set(datetime.today().strftime('%Y-%m-%d'))
         self.__hHora.set(datetime.now().strftime('%H'))
         self.__mHora.set(datetime.now().strftime('%M'))
         self.__duracion.set('1 hora')
-        self.__importancia.set('Normal')
-        self.__fechaRecor.set(datetime.today().strftime('%d/%m/%Y'))
+        self.__fechaRecor.set(datetime.today().strftime('%Y-%m-%d'))
         if self.__inputDesc != None:
             self.__inputDesc.delete("1.0", "end-1c")
         if self.__checkValue.get() == '1':
@@ -373,7 +435,13 @@ class NuevoEventoVista(ttk.Frame):
     def __agregarEtiqueta(self):
         """Es llamado al presionar el botón "Agregar Etiqueta", recogiendo el string del campo de entrada de etiqueta
         agregándolo a una lista de etiquetas del evento y a su vez mostrando gráficamente en la interfaz, las etiquetas agregadas."""
-        deleteTag = lambda tag: self.__listaEtiquetas.remove(tag)
+        #deleteTag = lambda tag: self.__listaEtiquetas.remove(tag)
+        def deleteTag(tag):
+            for tuple in self.__listaEtiquetas:
+                if tag in tuple:
+                    self.__listaEtiquetas.remove(tuple)
+                    break
+
         cant = int(self.__lblTagsRest['text'])
         self.__lblTagsRest['text'] = str(cant - 1)
         if cant == 1:
@@ -393,8 +461,12 @@ class NuevoEventoVista(ttk.Frame):
             deleteTag(tagLabel["text"])
             tagLabel.destroy()
 
-        if self.__etiqueta.get() not in self.__listaEtiquetas:
-            self.__listaEtiquetas.append(self.__etiqueta.get())
+        if self.__etiqueta.get() not in list(map(lambda x: x[1], self.__listaEtiquetas)):
+            if self.__etiqueta.get() not in self.__tags_in_db_nombres:
+                self.__listaEtiquetas.append((0, self.__etiqueta.get()))
+            elif self.__selectedOptionId:
+                self.__listaEtiquetas.append((self.__selectedOptionId, self.__etiqueta.get()))
+
             tagLabel = ttk.Label(self.__tagFrame, font=('Ubuntu', '10', 'bold'), text=self.__etiqueta.get(),
                                  relief='ridge', padding=5)
             tagLabel.bind("<Enter>", modificar1)

@@ -1,4 +1,4 @@
-from mysql_connection import Connection
+from db_context.mysql_connection import Connection
 
 
 class Cursor:

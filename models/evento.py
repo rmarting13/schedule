@@ -1,13 +1,16 @@
+from models.etiqueta import Etiqueta
+
+
 class Evento:
-    def __init__(self, titulo, fecha_hora, duracion, id_importancia,
-                 descripcion=None,  recordatorio=None, id_evento=None):
-        self._id_evento = id_evento
-        self._titulo = titulo
-        self._descripcion = descripcion
-        self._fecha_hora = fecha_hora
-        self._duracion = duracion
-        self._recordatorio = recordatorio
-        self._id_importancia = id_importancia
+    def __init__(self, **kwargs):
+        self._id_evento = kwargs.get('id_evento', None)
+        self._titulo = kwargs.get('titulo', None)
+        self._descripcion = kwargs.get('descripcion', None)
+        self._fecha_hora = kwargs.get('fecha_hora', None)
+        self._duracion = kwargs.get('duracion', None)
+        self._recordatorio = kwargs.get('recordatorio', None)
+        self._id_importancia = kwargs.get('id_importancia', None)
+        self._etiquetas = kwargs.get('etiquetas', None)
 
     @property
     def id_evento(self):
@@ -65,10 +68,19 @@ class Evento:
     def id_importancia(self, value):
         self._id_importancia = value
 
+    @property
+    def etiquetas(self):
+        return self._etiquetas
+
+    @etiquetas.setter
+    def etiquetas(self, value):
+        self._etiquetas = value
+
     def __str__(self):
         return f'''
                     Id evento: {self._id_evento}, Titulo: {self._titulo},
                     Descripción: {self._descripcion}, Fecha y hora: {self._fecha_hora},
                     Duración: {self._duracion} minutos,
-                    Recordatorio: {self._recordatorio}, Importancia: {self._id_importancia}
+                    Recordatorio: {self._recordatorio}, Importancia: {self._id_importancia},
+                    Etiquetas: {self._etiquetas}
                 '''

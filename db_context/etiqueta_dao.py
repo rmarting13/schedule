@@ -1,4 +1,4 @@
-from cursor import Cursor
+from db_context.cursor import Cursor
 from models.etiqueta import Etiqueta
 
 
@@ -9,6 +9,7 @@ class EtiquetaDao:
     CRUD (Create-Read-Update-Delete)
     """
     _SELECCIONAR = 'SELECT * FROM etiquetas ORDER BY id_etiqueta'
+    _SELECCIONAR_NOMBRE = 'SELECT * FROM etiquetas WHERE nombre LIKE %s ORDER BY nombre'
     _INSERTAR = 'INSERT INTO etiquetas(nombre) VALUES(%s)'
     _ACTUALIZAR = 'UPDATE etiquetas SET nombre=%s WHERE id_etiqueta=%s'
     _ELIMINAR = 'DELETE FROM etiquetas WHERE id_etiqueta=%s'
@@ -20,7 +21,18 @@ class EtiquetaDao:
             registros = cursor.fetchall()
             etiquetas = []
             for reg in registros:
-                etiquetas.append(Etiqueta(reg[0], reg[1]))
+                etiquetas.append(Etiqueta(id_etiqueta=reg[0], nombre=reg[1]))
+            return etiquetas
+
+    @classmethod
+    def seleccionar_nombre(cls, name):
+        with Cursor() as cursor:
+            value = '%'+name+'%'
+            cursor.execute(cls._SELECCIONAR_NOMBRE, (value,))
+            registros = cursor.fetchall()
+            etiquetas = []
+            for reg in registros:
+                etiquetas.append(Etiqueta(id_etiqueta=reg[0], nombre=reg[1]))
             return etiquetas
 
     @classmethod
@@ -29,7 +41,7 @@ class EtiquetaDao:
             values = (etiqueta.nombre,)
             cursor.execute(cls._INSERTAR, values)
             print(f'Etiqueta Insertada: {etiqueta}')
-            return cursor.rowcount
+            return cursor.lastrowid
 
     @classmethod
     def actualizar(cls, etiqueta: Etiqueta):
