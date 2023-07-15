@@ -5,6 +5,7 @@ from datetime import datetime
 from calendar import Calendar
 from tkcalendar import Calendar as tkCalendar
 from Archivo import BaseDeDatos
+from db_context.evento_dao import EventoDao
 from views.evento import VistaEvento
 
 
@@ -21,14 +22,13 @@ class FiltroDeEventos(ttk.Frame):
         self.__inputEtiqueta = tk.StringVar()
         self.__checkValueTitulo = tk.StringVar()
         self.__checkValueEtiqueta = tk.StringVar()
-        self.__db = BaseDeDatos('EventosDB.csv')
         self.__cargarComponentes()
 
     def __cargarComponentes(self):
         """Muestra en un frame, los widgets correspondientes a la interfaz de la vista de búsqueda."""
-        ttk.Checkbutton(self, text="Filtrar por Título:", padding=5, command=self.__filtrarPorTitulo,
+        ttk.Checkbutton(self, text="Filtrar por Título:", padding=5, command=self.__habilitarFiltroPorTitulo,
                         variable=self.__checkValueTitulo).grid(column=0, row=0, columnspan=1, sticky=tk.W)
-        ttk.Checkbutton(self, text="Filtrar por Etiquetas:", padding=5, command=self.__filtrarPorEtiqueta,
+        ttk.Checkbutton(self, text="Filtrar por Etiquetas:", padding=5, command=self.__habilitarFiltroPorEtiqueta,
                         variable=self.__checkValueEtiqueta).grid(column=0, row=1, columnspan=1, sticky=tk.W)
         self.__inputTit = ttk.Entry(self, font=('Ubuntu', '11'), width=30, textvariable=self.__inputTitulo,
                                     state='disabled')
@@ -40,21 +40,19 @@ class FiltroDeEventos(ttk.Frame):
         self.__btnBuscar.grid(column=0, row=2, columnspan=3, pady=5, padx=5)
         self.__frameResultados = ttk.Labelframe(self, text='Resultados', padding=5, borderwidth=2, relief='sunken')
 
-        columnas = ('id', 'ti', 'fe', 'ho', 'im')
+        columnas = ('id', 'ti', 'fe', 'et')
         self.__tablaTreeView = ttk.Treeview(self.__frameResultados, columns=columnas, show='headings',
-                                            selectmode="extended", displaycolumns=('ti', 'fe', 'ho', 'im'))
+                                            selectmode="extended", displaycolumns=('ti', 'fe', 'et'))
 
         self.__tablaTreeView.column('id', width=30, anchor=tk.CENTER)
         self.__tablaTreeView.column('ti', width=200, anchor=tk.CENTER)
-        self.__tablaTreeView.column('fe', width=70, anchor=tk.CENTER)
-        self.__tablaTreeView.column('ho', width=50, anchor=tk.CENTER)
-        self.__tablaTreeView.column('im', width=80, anchor=tk.CENTER)
+        self.__tablaTreeView.column('fe', width=100, anchor=tk.CENTER)
+        self.__tablaTreeView.column('et', width=200, anchor=tk.CENTER)
 
         self.__tablaTreeView.heading("id", text="Id", anchor=tk.CENTER)
-        self.__tablaTreeView.heading("fe", text="Fecha", anchor=tk.CENTER)
-        self.__tablaTreeView.heading("ho", text="Hora", anchor=tk.CENTER)
+        self.__tablaTreeView.heading("fe", text="Fecha - Hora", anchor=tk.CENTER)
         self.__tablaTreeView.heading("ti", text="Título", anchor=tk.CENTER)
-        self.__tablaTreeView.heading("im", text="Importancia", anchor=tk.CENTER)
+        self.__tablaTreeView.heading("et", text="Etiquetas", anchor=tk.CENTER)
 
         self.__sclBar = ttk.Scrollbar(self.__frameResultados, orient=tk.VERTICAL, command=self.__tablaTreeView.yview)
         self.__sclBar.grid(column=1, row=0, sticky=tk.NS)
@@ -63,7 +61,7 @@ class FiltroDeEventos(ttk.Frame):
         self.__frameResultados.grid(column=0, row=3, columnspan=3)
         self.__tablaTreeView.bind("<ButtonPress-1>", self.__onClickCell)
         self.__tablaTreeView.bind("<Double-Button-1>", self.__doubleOnClickCell)
-        self.__insertarElementos(self.__db.leerArchivoCompleto())
+        self.__insertarElementos(EventoDao.seleccionar())
 
     def actualizar(self):
         """Vuelve a cargar la tabla con eventos actualizada desde el archivo .csv"""
@@ -82,18 +80,22 @@ class FiltroDeEventos(ttk.Frame):
     def __doubleOnClickCell(self, event):
         """Define el comportamiento ciertos widgets al hacer doble click sobre un evento de la tabla."""
         id = self.__tablaTreeView.item(self.__tablaTreeView.focus(), 'values')[0]
-        evento = self.__db.filtrarPorID(id)
+        evento = EventoDao.seleccionar(id_evento=id)
         ventana = tk.Toplevel(self)
         VistaEvento(ventana, evento, self.__parent)
         ventana.grid()
 
     def __insertarElementos(self, datos):
         """Inserta en una talba tk.TreeView los eventos recibidos por parámetro."""
-        for row in datos:
-            valores = list(row.values())
-            valores.pop(4)
-            self.__tablaTreeView.insert('', tk.END, tags=valores[4], values=valores[:5])
-            self.__tablaTreeView.tag_configure(tagname='Importante', font='Helvetica 8 bold', background='red',
+        for evento in datos:
+            values = (
+                evento.id_evento,
+                evento.titulo,
+                evento.fecha_hora,
+                evento.etiquetas
+            )
+            self.__tablaTreeView.insert('', tk.END, tags=values, values=values)
+            self.__tablaTreeView.tag_configure(tagname='IMPORTANTE', font='Helvetica 8 bold', background='red',
                                                foreground='white')
 
     def __buscar(self):
@@ -103,16 +105,17 @@ class FiltroDeEventos(ttk.Frame):
         self.__tablaTreeView.delete(*self.__tablaTreeView.get_children())
         filtro = {}
         if self.__checkValueTitulo.get() not in ['0', '']:
-            filtro.update({'TITULO': self.__inputTitulo.get()})
+            filtro.update({'titulo': self.__inputTitulo.get()})
         if self.__checkValueEtiqueta.get() not in ['0', '']:
-            filtro.update({'ETIQUETA': self.__inputEtiqueta.get()})
+            filtro.update({'etiqueta': self.__inputEtiqueta.get()})
         if len(filtro.keys()) != 0:
-            self.__listaFiltrada = self.__db.leerDatosFiltrados(filtro)
-            self.__insertarElementos(self.__listaFiltrada)
+            listaFiltrada = EventoDao.seleccionar(**filtro)
+            self.__insertarElementos(listaFiltrada)
         else:
-            self.__insertarElementos(self.__db.leerArchivoCompleto())
+            self.__insertarElementos(EventoDao.seleccionar())
 
-    def __filtrarPorTitulo(self):
+
+    def __habilitarFiltroPorTitulo(self):
         """Es llamado al activar o desactivar el widget CheckButton del label "Filtrar por Título" en la interfa gráfica,
         y define el comportamiento de los widgets relacionados, habilitando/deshabilitando campos y botones."""
         if self.__checkValueTitulo.get() == '1':
@@ -123,7 +126,7 @@ class FiltroDeEventos(ttk.Frame):
             self.__inputTit['state'] = 'disabled'
         self.__habilitarBtnBuscar()
 
-    def __filtrarPorEtiqueta(self):
+    def __habilitarFiltroPorEtiqueta(self):
         """Es llamado al activar o desactivar el widget CheckButton del label "Filtrar por Etiqueta" en la interfa gráfica,
         y define el comportamiento de los widgets relacionados, habilitando/deshabilitando campos y botones."""
         if self.__checkValueEtiqueta.get() == '1':

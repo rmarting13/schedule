@@ -16,7 +16,14 @@ class EventoDao:
                         'INNER JOIN importancias im ON ev.id_importancia = im.id_importancia '\
                         'GROUP BY ev.id_evento, ev.titulo, ev.fecha_hora, ev.descripcion, ev.duracion, ev.recordatorio '\
                         'ORDER BY fecha_hora;'
-    _SELECCIONAR_ID = 'SELECT * FROM eventos WHERE id_evento=%s;'
+    _SELECCIONAR_ID = 'SELECT ev.id_evento, ev.titulo, ev.fecha_hora, ev.descripcion, ev.duracion, '\
+                      'ev.recordatorio, im.nombre, GROUP_CONCAT(et.nombre) AS "etiquetas" FROM eventos ev '\
+                      'INNER JOIN eventos_etiquetas ee ON ev.id_evento = ee.id_evento '\
+                      'INNER JOIN etiquetas et ON ee.id_etiqueta = et.id_etiqueta '\
+                      'INNER JOIN importancias im ON ev.id_importancia = im.id_importancia '\
+                      'WHERE ev.id_evento = %s'\
+                      'GROUP BY ev.id_evento, ev.titulo, ev.fecha_hora, ev.descripcion, ev.duracion, '\
+                      'ev.recordatorio ORDER BY fecha_hora;'
     _SELECCIONAR_ETIQUETA = 'SELECT ev.id_evento, ev.titulo, ev.fecha_hora, ev.descripcion, ev.duracion, '\
                             'ev.recordatorio, im.nombre, GROUP_CONCAT(et.nombre) AS "etiquetas" FROM eventos ev '\
                             'INNER JOIN eventos_etiquetas ee ON ev.id_evento = ee.id_evento '\
@@ -34,6 +41,14 @@ class EventoDao:
                           'GROUP BY ev.id_evento, ev.titulo, ev.fecha_hora, ev.descripcion, ev.duracion, '\
                           'ev.recordatorio ORDER BY fecha_hora;'
     _SELECCIONAR_FECHA_HORA = 'SELECT * FROM eventos WHERE fecha_hora = %s;'
+    _SELECCIONAR_TITULO_ETIQUETA = 'SELECT ev.id_evento, ev.titulo, ev.fecha_hora, ev.descripcion, ev.duracion, ' \
+                                   'ev.recordatorio, im.nombre, GROUP_CONCAT(et.nombre) AS "etiquetas" FROM eventos ev ' \
+                                   'INNER JOIN eventos_etiquetas ee ON ev.id_evento = ee.id_evento ' \
+                                   'INNER JOIN etiquetas et ON ee.id_etiqueta = et.id_etiqueta ' \
+                                   'INNER JOIN importancias im ON ev.id_importancia = im.id_importancia ' \
+                                   'WHERE ev.titulo LIKE %s AND et.nombre LIKE %s' \
+                                   'GROUP BY ev.id_evento, ev.titulo, ev.fecha_hora, ev.descripcion, ev.duracion, ' \
+                                   'ev.recordatorio ORDER BY fecha_hora;'
     _INSERTAR = 'INSERT INTO eventos(titulo, fecha_hora, descripcion, duracion, recordatorio, id_importancia) VALUES(' \
                 '%s, %s, %s, %s, %s, %s);'
     _ACTUALIZAR = 'UPDATE eventos SET titulo=%s, fecha_hora=%s, descripcion=%s, duracion=%s, recordatorio=%s, ' \
@@ -42,41 +57,71 @@ class EventoDao:
 
 
     @classmethod
-    def seleccionar_todos(cls):
+    def seleccionar(cls, **kwargs):
         with Cursor() as cursor:
-            cursor.execute(cls._SELECCIONAR_TODO)
-            registros = cursor.fetchall()
-            eventos = []
-            for reg in registros:
-                eventos.append(Evento(
-                    id_evento=reg[0],
-                    titulo=reg[1],
-                    fecha_hora=reg[2],
-                    descripcion=reg[3],
-                    duracion=reg[4],
-                    recordatorio=reg[5],
-                    id_importancia=reg[6],
-                    etiquetas=reg[7]
+            if kwargs.get('id_evento'):
+                values = (kwargs.get('id_evento'),)
+                cursor.execute(cls._SELECCIONAR_ID, values)
+                reg = cursor.fetchone()
+                eventos = Evento(
+                            id_evento=reg[0],
+                            titulo=reg[1],
+                            fecha_hora=reg[2],
+                            descripcion=reg[3],
+                            duracion=reg[4],
+                            recordatorio=reg[5],
+                            id_importancia=reg[6],
+                            etiquetas=reg[7]
+                        )
+            else:
+                if kwargs.get('titulo') and kwargs.get('etiqueta'):
+                    titulo = '%' + kwargs.get('titulo') + '%'
+                    etiqueta = '%' + kwargs.get('etiqueta') + '%'
+                    values = (titulo, etiqueta)
+                    cursor.execute(cls._SELECCIONAR_TITULO_ETIQUETA, values)
+                    registros = cursor.fetchall()
+                elif kwargs.get('titulo'):
+                    values = ('%'+kwargs.get('titulo')+'%', )
+                    cursor.execute(cls._SELECCIONAR_TITULO, values)
+                    registros = cursor.fetchall()
+                elif kwargs.get('etiqueta'):
+                    values = ('%'+kwargs.get('etiqueta')+'%', )
+                    cursor.execute(cls._SELECCIONAR_ETIQUETA, values)
+                    registros = cursor.fetchall()
+                else:
+                    cursor.execute(cls._SELECCIONAR_TODO)
+                    registros = cursor.fetchall()
+                eventos = []
+                for reg in registros:
+                    eventos.append(Evento(
+                        id_evento=reg[0],
+                        titulo=reg[1],
+                        fecha_hora=reg[2],
+                        descripcion=reg[3],
+                        duracion=reg[4],
+                        recordatorio=reg[5],
+                        id_importancia=reg[6],
+                        etiquetas=reg[7]
+                        )
                     )
-                )
             return eventos
 
     @classmethod
-    def seleccionar_id(cls, id_evento):
-        with Cursor() as cursor:
-            cursor.execute(cls._SELECCIONAR_ID, id_evento)
-            reg = cursor.fetchone()
-            evento = Evento(
-                    id_evento=reg[0],
-                    titulo=reg[1],
-                    fecha_hora=reg[2],
-                    descripcion=reg[3],
-                    duracion=reg[4],
-                    recordatorio=reg[5],
-                    id_importancia=reg[6],
-                    etiquetas=reg[7]
-            )
-            return evento
+    # def seleccionar_id(cls, id_evento):
+    #     with Cursor() as cursor:
+    #         cursor.execute(cls._SELECCIONAR_ID, id_evento)
+    #         reg = cursor.fetchone()
+    #         evento = Evento(
+    #                 id_evento=reg[0],
+    #                 titulo=reg[1],
+    #                 fecha_hora=reg[2],
+    #                 descripcion=reg[3],
+    #                 duracion=reg[4],
+    #                 recordatorio=reg[5],
+    #                 id_importancia=reg[6],
+    #                 etiquetas=reg[7]
+    #         )
+    #         return evento
 
     @classmethod
     def eixiste_fecha_hora(cls, fecha_hora):
@@ -87,24 +132,47 @@ class EventoDao:
             return cursor.rowcount > 0
 
     @classmethod
-    def seleccionar_titulo(cls, order_by=None):
-        with Cursor() as cursor:
-            cursor.execute(cls._SELECCIONAR_TITULO_ORDER_BY_FECHA)
-            registros = cursor.fetchall()
-            eventos = []
-            for reg in registros:
-                eventos.append(Evento(
-                    id_evento=reg[0],
-                    titulo=reg[1],
-                    fecha_hora=reg[2],
-                    descripcion=reg[3],
-                    duracion=reg[4],
-                    recordatorio=reg[5],
-                    id_importancia=reg[6],
-                    etiquetas=reg[7]
-                    )
-                )
-            return eventos
+    # def seleccionar_titulo(cls, order_by=None):
+    #     with Cursor() as cursor:
+    #         cursor.execute(cls._SELECCIONAR_TITULO)
+    #         registros = cursor.fetchall()
+    #         eventos = []
+    #         for reg in registros:
+    #             eventos.append(Evento(
+    #                 id_evento=reg[0],
+    #                 titulo=reg[1],
+    #                 fecha_hora=reg[2],
+    #                 descripcion=reg[3],
+    #                 duracion=reg[4],
+    #                 recordatorio=reg[5],
+    #                 id_importancia=reg[6],
+    #                 etiquetas=reg[7]
+    #                 )
+    #             )
+    #         return eventos
+
+    @classmethod
+    # def seleccionar_titulo_etiqueta(cls, **filters):
+    #     with Cursor() as cursor:
+    #         titulo = '%'+filters.get('titulo')+'%'
+    #         etiqueta = '%'+filters.get('etiqueta')+'%'
+    #         values = (titulo, etiqueta)
+    #         cursor.execute(cls._SELECCIONAR_TITULO_ETIQUETA, values)
+    #         registros = cursor.fetchall()
+    #         eventos = []
+    #         for reg in registros:
+    #             eventos.append(Evento(
+    #                 id_evento=reg[0],
+    #                 titulo=reg[1],
+    #                 fecha_hora=reg[2],
+    #                 descripcion=reg[3],
+    #                 duracion=reg[4],
+    #                 recordatorio=reg[5],
+    #                 id_importancia=reg[6],
+    #                 etiquetas=reg[7]
+    #             )
+    #             )
+    #         return eventos
 
     @classmethod
     def insertar(cls, evento: Evento):

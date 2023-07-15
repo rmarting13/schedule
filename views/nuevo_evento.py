@@ -18,7 +18,7 @@ class NuevoEventoVista(ttk.Frame):
     """Clase que representa gráficamente la interfaz de creación/modificación de un evento de calendario."""
 
     def __init__(self, parent, gui):
-        super().__init__(parent, padding=(20))
+        super().__init__(parent, padding=20)
         self.__guiParent = gui
         self.grid(column=0, row=1, sticky=(tk.N, tk.S, tk.E, tk.W))
         parent.columnconfigure(0, weight=1)
@@ -45,7 +45,8 @@ class NuevoEventoVista(ttk.Frame):
         self.__checkValue = tk.StringVar()
         self.__selectedOptionId = None
         if self.__guiParent.selectID:
-            self.__eventoActual = EventoDao.seleccionar_id(id_evento=self.__guiParent.selectID)
+
+            self.__eventoActual = EventoDao.seleccionar(id_evento=self.__guiParent.selectID)
             fecha, hora = self.__eventoActual['fecha_hora'].split(' ')
             self.__id = self.__eventoActual['id_evento']
             self.__titulo.set(self.__eventoActual['titulo'])
@@ -82,10 +83,10 @@ class NuevoEventoVista(ttk.Frame):
             text="Título: ",
             justify='left',
             width=6
-        ).grid(column=0, row=0, columnspan=1, sticky=(tk.W), pady=5)
+        ).grid(column=0, row=0, columnspan=1, sticky=tk.W, pady=5)
         self.__inputTit = ttk.Entry(self.__block1, font=('Ubuntu Medium', '12', 'bold'), width=35,
                                     textvariable=self.__titulo, justify='right')
-        self.__inputTit.grid(column=1, row=0, columnspan=1, sticky=(tk.W), pady=5)
+        self.__inputTit.grid(column=1, row=0, columnspan=1, sticky=tk.W, pady=5)
 
         # DESCRIPCIÓN
         ttk.Label(self.__block1, font=('Ubuntu', '12', 'bold'), text="Descripción:", justify='left').grid(column=0,
