@@ -3,6 +3,7 @@ from tkinter import ttk
 from PIL import ImageTk, Image
 from datetime import datetime
 from Archivo import BaseDeDatos
+from db_context.evento_dao import EventoDao
 from views.busqueda import FiltroDeEventos
 from views.mensual import VistaMensual
 from views.nuevo_evento import NuevoEventoVista
@@ -177,7 +178,7 @@ class App(ttk.Frame):
         y le pasa como parámetro el atributo __selectID, el cual contiene ID del evento seleccionado de 
         la tabla de eventos de alguna vista (Mensual, Semanal, Búsqueda), luego actualiza la vista que se 
         encuentre activa en ese momento."""
-        self.db.borrarEvento(self.selectID)
+        EventoDao.eliminar(id_evento=self.selectID)
         PopUp(self).mensaje('Evento eliminado con éxito!')
         if self.__frameFiltro != None:
             self.__frameFiltro.actualizar()

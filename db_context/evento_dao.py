@@ -224,9 +224,12 @@ class EventoDao:
             return cursor.lastrowid
 
     @classmethod
-    def eliminar(cls, evento: Evento):
+    def eliminar(cls, evento: Evento=None, id_evento=None):
         with Cursor() as cursor:
-            values = (evento.id_evento,)
+            if evento:
+                values = (evento.id_evento,)
+            else:
+                values = (id_evento,)
             cursor.execute(cls._ELIMINAR, values)
             print(f'Evento eliminado: {evento}')
 
