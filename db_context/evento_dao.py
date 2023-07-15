@@ -15,7 +15,7 @@ class EventoDao:
                         'INNER JOIN etiquetas et ON ee.id_etiqueta = et.id_etiqueta '\
                         'INNER JOIN importancias im ON ev.id_importancia = im.id_importancia '\
                         'GROUP BY ev.id_evento, ev.titulo, ev.fecha_hora, ev.descripcion, ev.duracion, ev.recordatorio '\
-                        'ORDER BY fecha_hora;'
+                        'ORDER BY fecha_hora DESC;'
     _SELECCIONAR_ID = 'SELECT ev.id_evento, ev.titulo, ev.fecha_hora, ev.descripcion, ev.duracion, '\
                       'ev.recordatorio, im.nombre, GROUP_CONCAT(et.nombre) AS "etiquetas" FROM eventos ev '\
                       'INNER JOIN eventos_etiquetas ee ON ev.id_evento = ee.id_evento '\
@@ -23,7 +23,7 @@ class EventoDao:
                       'INNER JOIN importancias im ON ev.id_importancia = im.id_importancia '\
                       'WHERE ev.id_evento = %s'\
                       'GROUP BY ev.id_evento, ev.titulo, ev.fecha_hora, ev.descripcion, ev.duracion, '\
-                      'ev.recordatorio ORDER BY fecha_hora;'
+                      'ev.recordatorio ORDER BY fecha_hora DESC;'
     _SELECCIONAR_ETIQUETA = 'SELECT ev.id_evento, ev.titulo, ev.fecha_hora, ev.descripcion, ev.duracion, '\
                             'ev.recordatorio, im.nombre, GROUP_CONCAT(et.nombre) AS "etiquetas" FROM eventos ev '\
                             'INNER JOIN eventos_etiquetas ee ON ev.id_evento = ee.id_evento '\
@@ -31,7 +31,7 @@ class EventoDao:
                             'INNER JOIN importancias im ON ev.id_importancia = im.id_importancia '\
                             'WHERE et.nombre LIKE %s'\
                             'GROUP BY ev.id_evento, ev.titulo, ev.fecha_hora, ev.descripcion, ev.duracion, '\
-                            'ev.recordatorio ORDER BY fecha_hora;'
+                            'ev.recordatorio ORDER BY fecha_hora DESC;'
     _SELECCIONAR_TITULO = 'SELECT ev.id_evento, ev.titulo, ev.fecha_hora, ev.descripcion, ev.duracion, '\
                           'ev.recordatorio, im.nombre, GROUP_CONCAT(et.nombre) AS "etiquetas" FROM eventos ev '\
                           'INNER JOIN eventos_etiquetas ee ON ev.id_evento = ee.id_evento '\
@@ -39,7 +39,7 @@ class EventoDao:
                           'INNER JOIN importancias im ON ev.id_importancia = im.id_importancia '\
                           'WHERE ev.titulo LIKE %s'\
                           'GROUP BY ev.id_evento, ev.titulo, ev.fecha_hora, ev.descripcion, ev.duracion, '\
-                          'ev.recordatorio ORDER BY fecha_hora;'
+                          'ev.recordatorio ORDER BY fecha_hora DESC;'
     _SELECCIONAR_FECHA_HORA = 'SELECT * FROM eventos WHERE fecha_hora = %s;'
     _SELECCIONAR_TITULO_ETIQUETA = 'SELECT ev.id_evento, ev.titulo, ev.fecha_hora, ev.descripcion, ev.duracion, ' \
                                    'ev.recordatorio, im.nombre, GROUP_CONCAT(et.nombre) AS "etiquetas" FROM eventos ev ' \
@@ -48,7 +48,7 @@ class EventoDao:
                                    'INNER JOIN importancias im ON ev.id_importancia = im.id_importancia ' \
                                    'WHERE ev.titulo LIKE %s AND et.nombre LIKE %s' \
                                    'GROUP BY ev.id_evento, ev.titulo, ev.fecha_hora, ev.descripcion, ev.duracion, ' \
-                                   'ev.recordatorio ORDER BY fecha_hora;'
+                                   'ev.recordatorio ORDER BY fecha_hora DESC;'
     _INSERTAR = 'INSERT INTO eventos(titulo, fecha_hora, descripcion, duracion, recordatorio, id_importancia) VALUES(' \
                 '%s, %s, %s, %s, %s, %s);'
     _ACTUALIZAR = 'UPDATE eventos SET titulo=%s, fecha_hora=%s, descripcion=%s, duracion=%s, recordatorio=%s, ' \
