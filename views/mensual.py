@@ -5,6 +5,7 @@ from datetime import datetime
 from calendar import Calendar
 from tkcalendar import Calendar as tkCalendar
 from Archivo import BaseDeDatos
+from db_context.evento_dao import EventoDao
 from views.calendario import Calendario
 from views.evento import VistaEvento
 
@@ -79,9 +80,11 @@ class VistaMensual(ttk.Frame):
                 label = ttk.Label(frameDay, width=10, text=str(date.day), font='Helvetica 12 bold',
                                   padding=(5, 0, 5, 0), background=self.__gui.configTema['bgDiaMes'])
                 label.grid(padx=2, pady=2)
-                diaFormat = date.strftime('%d/%m/%Y')
-                if diaFormat in map(lambda x: x[1], fechasConEventos):
-                    eventosDelDia = self.__db.leerDatosFiltrados({'FECHA': diaFormat})
+                diaFormat = date.strftime('%Y-%m-%d')
+                eventosDelDia = EventoDao.seleccionar_fecha(fecha=diaFormat)
+                print(f'FECHA: {diaFormat}')
+                print(f'EVENTOS DEL DIA: {eventosDelDia}')
+                if eventosDelDia:
                     self.__crearTablaTreeView(frameDay, eventosDelDia, height)
                 else:
                     ttk.Label(frameDay, text='SIN EVENTOS', font='Helvetica 8', width=10, padding=pad,
@@ -110,9 +113,10 @@ class VistaMensual(ttk.Frame):
         tablaTreeView.bind("<ButtonPress-1>", self.__onClickCell)
         tablaTreeView.bind("<Double-Button-1>", self.__doubleOnClickCell)
         for row in datos:
-            valores = (row['ID'], row['TITULO'])
-            tablaTreeView.insert('', tk.END, tags=row['IMPORTANCIA'], values=valores)
-        tablaTreeView.tag_configure(tagname='Importante', font='Helvetica 8 bold', background='red', foreground='white')
+            valores = (row.id_evento, row.titulo)
+            print(valores)
+            tablaTreeView.insert('', tk.END, tags=str(row.id_importancia), values=valores)
+        tablaTreeView.tag_configure(tagname='2', font='Helvetica 8 bold', background='red', foreground='white')
         self.__listaTablas.append(tablaTreeView)
 
     def __onClickCell(self, event):
@@ -134,8 +138,9 @@ class VistaMensual(ttk.Frame):
         tabla = list(filter(lambda x: x.focus() != '', self.__listaTablas))
         if len(tabla) != 0 and tabla != None:
             item = tabla[0].item(tabla[0].focus(), 'values')
-            id = item[0]
-            evento = self.__db.filtrarPorID(id)
+            id = int(item[0])
+            print(id)
+            evento = EventoDao.seleccionar(id_evento=id)
             ventana = tk.Toplevel(self)
             VistaEvento(ventana, evento, self.__gui)
             ventana.grid()

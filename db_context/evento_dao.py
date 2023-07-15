@@ -11,16 +11,16 @@ class EventoDao:
     _LAST_INSERT_ID = 'SELECT LAST_INSERT_ID() from eventos;'
     _SELECCIONAR_TODO = 'SELECT ev.id_evento, ev.titulo, ev.fecha_hora, ev.descripcion, ev.duracion, '\
                         'ev.recordatorio, im.nombre, GROUP_CONCAT(et.nombre) AS "etiquetas" FROM eventos ev '\
-                        'INNER JOIN eventos_etiquetas ee ON ev.id_evento = ee.id_evento '\
-                        'INNER JOIN etiquetas et ON ee.id_etiqueta = et.id_etiqueta '\
-                        'INNER JOIN importancias im ON ev.id_importancia = im.id_importancia '\
+                        'LEFT JOIN eventos_etiquetas ee ON ev.id_evento = ee.id_evento '\
+                        'LEFT JOIN etiquetas et ON ee.id_etiqueta = et.id_etiqueta '\
+                        'LEFT JOIN importancias im ON ev.id_importancia = im.id_importancia '\
                         'GROUP BY ev.id_evento, ev.titulo, ev.fecha_hora, ev.descripcion, ev.duracion, ev.recordatorio '\
                         'ORDER BY fecha_hora DESC;'
     _SELECCIONAR_ID = 'SELECT ev.id_evento, ev.titulo, ev.fecha_hora, ev.descripcion, ev.duracion, '\
                       'ev.recordatorio, ev.id_importancia, GROUP_CONCAT(et.nombre) AS "etiquetas" FROM eventos ev '\
-                      'INNER JOIN eventos_etiquetas ee ON ev.id_evento = ee.id_evento '\
-                      'INNER JOIN etiquetas et ON ee.id_etiqueta = et.id_etiqueta '\
-                      'WHERE ev.id_evento = %s'\
+                      'LEFT JOIN eventos_etiquetas ee ON ev.id_evento = ee.id_evento '\
+                      'LEFT JOIN etiquetas et ON ee.id_etiqueta = et.id_etiqueta '\
+                      'WHERE ev.id_evento = %s '\
                       'GROUP BY ev.id_evento, ev.titulo, ev.fecha_hora, ev.descripcion, ev.duracion, '\
                       'ev.recordatorio ORDER BY fecha_hora DESC;'
     _SELECCIONAR_ETIQUETA = 'SELECT ev.id_evento, ev.titulo, ev.fecha_hora, ev.descripcion, ev.duracion, '\
@@ -33,18 +33,19 @@ class EventoDao:
                             'ev.recordatorio ORDER BY fecha_hora DESC;'
     _SELECCIONAR_TITULO = 'SELECT ev.id_evento, ev.titulo, ev.fecha_hora, ev.descripcion, ev.duracion, '\
                           'ev.recordatorio, im.nombre, GROUP_CONCAT(et.nombre) AS "etiquetas" FROM eventos ev '\
-                          'INNER JOIN eventos_etiquetas ee ON ev.id_evento = ee.id_evento '\
-                          'INNER JOIN etiquetas et ON ee.id_etiqueta = et.id_etiqueta '\
-                          'INNER JOIN importancias im ON ev.id_importancia = im.id_importancia '\
+                          'LEFT JOIN eventos_etiquetas ee ON ev.id_evento = ee.id_evento '\
+                          'LEFT JOIN etiquetas et ON ee.id_etiqueta = et.id_etiqueta '\
+                          'LEFT JOIN importancias im ON ev.id_importancia = im.id_importancia '\
                           'WHERE ev.titulo LIKE %s'\
                           'GROUP BY ev.id_evento, ev.titulo, ev.fecha_hora, ev.descripcion, ev.duracion, '\
                           'ev.recordatorio ORDER BY fecha_hora DESC;'
     _SELECCIONAR_FECHA_HORA = 'SELECT * FROM eventos WHERE fecha_hora = %s;'
+    _SELECCIONAR_FECHA = 'SELECT id_evento, titulo, fecha_hora, id_importancia FROM eventos WHERE fecha_hora LIKE %s ORDER BY fecha_hora;'
     _SELECCIONAR_TITULO_ETIQUETA = 'SELECT ev.id_evento, ev.titulo, ev.fecha_hora, ev.descripcion, ev.duracion, ' \
                                    'ev.recordatorio, im.nombre, GROUP_CONCAT(et.nombre) AS "etiquetas" FROM eventos ev ' \
-                                   'INNER JOIN eventos_etiquetas ee ON ev.id_evento = ee.id_evento ' \
-                                   'INNER JOIN etiquetas et ON ee.id_etiqueta = et.id_etiqueta ' \
-                                   'INNER JOIN importancias im ON ev.id_importancia = im.id_importancia ' \
+                                   'LEFT JOIN eventos_etiquetas ee ON ev.id_evento = ee.id_evento ' \
+                                   'LEFT JOIN etiquetas et ON ee.id_etiqueta = et.id_etiqueta ' \
+                                   'LEFT JOIN importancias im ON ev.id_importancia = im.id_importancia ' \
                                    'WHERE ev.titulo LIKE %s AND et.nombre LIKE %s' \
                                    'GROUP BY ev.id_evento, ev.titulo, ev.fecha_hora, ev.descripcion, ev.duracion, ' \
                                    'ev.recordatorio ORDER BY fecha_hora DESC;'
@@ -62,6 +63,7 @@ class EventoDao:
                 values = (kwargs.get('id_evento'),)
                 cursor.execute(cls._SELECCIONAR_ID, values)
                 reg = cursor.fetchone()
+                print(f'Registro = {reg}')
                 eventos = Evento(
                             id_evento=reg[0],
                             titulo=reg[1],
@@ -129,6 +131,23 @@ class EventoDao:
             cursor.execute(cls._SELECCIONAR_FECHA_HORA, (fecha_hora,))
             cursor.fetchone()
             return cursor.rowcount > 0
+
+    @classmethod
+    def seleccionar_fecha(cls, fecha):
+        with Cursor() as cursor:
+            value = (fecha+'%',)
+            cursor.execute(cls._SELECCIONAR_FECHA, value)
+            registros = cursor.fetchall()
+            eventos = []
+            for reg in registros:
+                eventos.append(Evento(
+                        id_evento=reg[0],
+                        titulo=reg[1],
+                        fecha_hora=reg[2],
+                        id_importancia=reg[3],
+                    )
+                )
+            return eventos
 
     @classmethod
     # def seleccionar_titulo(cls, order_by=None):

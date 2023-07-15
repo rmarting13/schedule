@@ -80,6 +80,7 @@ class FiltroDeEventos(ttk.Frame):
     def __doubleOnClickCell(self, event):
         """Define el comportamiento ciertos widgets al hacer doble click sobre un evento de la tabla."""
         id = self.__tablaTreeView.item(self.__tablaTreeView.focus(), 'values')[0]
+        print(id)
         evento = EventoDao.seleccionar(id_evento=id)
         ventana = tk.Toplevel(self)
         VistaEvento(ventana, evento, self.__parent)

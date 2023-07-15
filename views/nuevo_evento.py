@@ -274,6 +274,7 @@ class NuevoEventoVista(ttk.Frame):
             self.__inputFechaRecor = ttk.Entry(self.__inputRecor, font=('Ubuntu', '11', 'bold'),
                                                textvariable=self.__fechaRecor, state='readonly')
             self.__inputFechaRecor.config(justify='center', width=15)
+            self.__fechaRecor.set(datetime.today().strftime('%Y-%m-%d'))
             self.__inputFechaRecor.grid(column=1, row=0, columnspan=1, sticky=(tk.W), pady=5)
             self.__inputFechaRecor.bind("<ButtonPress-1>", self.__seleccionarFechaRecor)
             # HORA
@@ -381,7 +382,7 @@ class NuevoEventoVista(ttk.Frame):
             new_tags = list(filter(lambda tg: tg[0] == 0, self.__listaEtiquetas))
             print(f'OLD TAGS: {old_tags}')
             print(f'NEW TAGS: {new_tags}')
-            if self.__guiParent.selectID: # actualización de un evento existente
+            if self.__guiParent.selectID:  # actualización de un evento existente
                 id_evento = self.__id
                 EventoDao.actualizar(evento)
                 tags_on_db = sorted(list(map(lambda x: x[1], EventoEtiquetaDao.seleccionar(id_evento))))
@@ -394,6 +395,9 @@ class NuevoEventoVista(ttk.Frame):
                     print(delete_tags)
                     for tag in delete_tags:  # se eliminan las relaciones de la tabla eventos_etiquetas en la db
                         EventoEtiquetaDao.eliminar(id_evento=id_evento, id_etiqueta=tag)
+                    added_tags = list(filter(lambda tg: tg not in tags_on_db, old_tags_to_compare))
+                    for tag in added_tags:  # se agregam las nuevas relaciones de la tabla eventos_etiquetas en la db
+                        EventoEtiquetaDao.insertar(id_evento=id_evento, id_etiqueta=tag)
             else:  # Creación de un evento nuevo
                 id_evento = EventoDao.insertar(evento)
                 if len(old_tags) > 0:  # si se seleccionaron etiquetas existentes
