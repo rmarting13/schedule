@@ -5,6 +5,7 @@ from datetime import datetime
 from calendar import Calendar
 from tkcalendar import Calendar as tkCalendar
 from Archivo import BaseDeDatos
+from db_context.evento_dao import EventoDao
 from views.calendario import Calendario
 from views.evento import VistaEvento
 
@@ -60,7 +61,7 @@ class VistaSemanal(ttk.Frame):
             eventFrame = ttk.Frame(weekFrame, borderwidth=2, relief="solid")
             lblDia = ttk.Label(eventFrame, width=14,
                                text=self.__cal.nombreDelDia(col, 1) + '  ' + dia.strftime('%d/%m'),
-                               font='Helvetica 12 bold', padding=5, background=self.__gui.configTema['bgNombreDia'])
+                               font='Ubuntu 12 bold', padding=5, background=self.__gui.configTema['bgNombreDia'])
             lblDia.grid(column=0, row=0, pady=5, padx=0)
             if col == 0:
                 lblDia['foreground'] = 'red'
@@ -68,16 +69,16 @@ class VistaSemanal(ttk.Frame):
                 lblDia['foreground'] = 'blue'
             if dia == self.__fechaActualDT.date():
                 lblDia['background'] = self.__gui.configTema['bgHoy']
-            eventFrame.grid(column=col, row=1, pady=0, padx=2)
+            eventFrame.grid(column=col, row=1, pady=0, padx=1)
             self.__frameEventos = ttk.Frame(eventFrame)
-            diaFormat = dia.strftime('%d/%m/%Y')
-            if diaFormat in map(lambda x: x[1], fechasConEventos):
-                eventosDelDia = self.__db.leerDatosFiltrados({'FECHA': diaFormat})
+            diaFormat = dia.strftime('%Y-%m-%d')
+            eventosDelDia = EventoDao.seleccionar_fecha(fecha=diaFormat)
+            if eventosDelDia:
                 self.__crearTablaTreeView(self.__frameEventos, eventosDelDia)
             else:
-                ttk.Label(self.__frameEventos, text='SIN EVENTOS', font='Helvetica 12', padding=(15, 75, 15, 75),
+                ttk.Label(self.__frameEventos, text='SIN EVENTOS', font='Ubuntu 12', padding=(15, 75, 15, 75),
                           background=self.__gui.configTema['bgSinEventos']).grid()
-            self.__frameEventos.grid(column=0, row=1, pady=5, padx=0)
+            self.__frameEventos.grid(column=0, row=1, pady=2, padx=2)
         return weekFrame
 
     def __crearTablaTreeView(self, frame, datos):
@@ -85,16 +86,16 @@ class VistaSemanal(ttk.Frame):
         tablaTreeView = ttk.Treeview(frame, columns=('id', 'ev'), show="headings", selectmode="extended", height=7,
                                      padding=5)
         tablaTreeView["displaycolumns"] = ('ev')
-        tablaTreeView.column('ev', width=120, anchor=tk.W)
+        tablaTreeView.column('ev', width=120, anchor=(tk.NW))
         tablaTreeView.heading('ev', text="Eventos", anchor=tk.CENTER)
-        tablaTreeView.grid(column=0, row=0)
+        tablaTreeView.grid(column=0, row=0,sticky=tk.W)
         tablaTreeView.bind("<ButtonPress-1>", self.__onClickCell)
         tablaTreeView.bind("<Double-Button-1>", self.__doubleOnClickCell)
         for row in datos:
-            cad = row['HORA'] + '  ' + row['TITULO']
-            valores = (row['ID'], cad)
-            tablaTreeView.insert('', tk.END, tags=row['IMPORTANCIA'], values=valores)
-        tablaTreeView.tag_configure(tagname='Importante', font='Helvetica 8 bold', background='red', foreground='white')
+            cad = row.fecha_hora.strftime('%H:%M') + '  ' + row.titulo
+            valores = (row.id_evento, cad)
+            tablaTreeView.insert('', tk.END, tags=str(row.id_importancia), values=valores)
+        tablaTreeView.tag_configure(tagname='2', background='#7d0c0c', foreground='white')
         self.__listaTablas.append(tablaTreeView)
 
     def __onClickCell(self, event):
@@ -117,7 +118,7 @@ class VistaSemanal(ttk.Frame):
         if len(tabla) != 0 and tabla != None:
             item = tabla[0].item(tabla[0].focus(), 'values')
             id = item[0]
-            evento = self.__db.filtrarPorID(id)
+            evento = EventoDao.seleccionar(id_evento=id)
             ventana = tk.Toplevel(self)
             VistaEvento(ventana, evento, self.__gui)
             ventana.grid()

@@ -135,13 +135,14 @@ class NuevoEventoVista(ttk.Frame):
         self.__inputTag.grid(column=1, row=5, columnspan=1, sticky=(tk.E), pady=5)
 
         if self.__guiParent.selectID:
-            tags = self.__eventoActual.etiquetas.split(sep=',')
-            for tag in tags:
-                self.__etiqueta.set(tag)
-                self.__agregarEtiqueta()
-            event_tags = EtiquetaDao.seleccionar_evento_etiquetas(id_evento=self.__id)
-            for tag in event_tags:
-                self.__listaEtiquetas.append((tag.id_etiqueta, tag.nombre))
+            if self.__eventoActual.etiquetas:
+                tags = self.__eventoActual.etiquetas.split(sep=',')
+                for tag in tags:
+                    self.__etiqueta.set(tag)
+                    self.__agregarEtiqueta()
+                event_tags = EtiquetaDao.seleccionar_evento_etiquetas(id_evento=self.__id)
+                for tag in event_tags:
+                    self.__listaEtiquetas.append((tag.id_etiqueta, tag.nombre))
 
         # FECHA
         ttk.Label(self.__block2, font=('Ubuntu', '12', 'bold'), text="Fecha:", justify='left').grid(column=0, row=0,

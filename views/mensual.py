@@ -82,8 +82,6 @@ class VistaMensual(ttk.Frame):
                 label.grid(padx=2, pady=2)
                 diaFormat = date.strftime('%Y-%m-%d')
                 eventosDelDia = EventoDao.seleccionar_fecha(fecha=diaFormat)
-                print(f'FECHA: {diaFormat}')
-                print(f'EVENTOS DEL DIA: {eventosDelDia}')
                 if eventosDelDia:
                     self.__crearTablaTreeView(frameDay, eventosDelDia, height)
                 else:
