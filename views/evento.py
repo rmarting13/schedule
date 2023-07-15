@@ -5,6 +5,7 @@ from datetime import datetime
 from calendar import Calendar
 from tkcalendar import Calendar as tkCalendar
 from Archivo import BaseDeDatos
+from db_context.importancia_dao import ImportanciaDao
 from models.evento import Evento
 
 
@@ -50,7 +51,9 @@ class VistaEvento(ttk.Frame):
         self.__lblDura.grid(column=1, row=3, padx=5, pady=5, sticky=tk.W)
         ttk.Label(self, text='IMPORTANCIA:', style='lblName.TLabel', padding=5, borderwidth=2, relief='raised').grid(
             column=2, row=3, padx=5, pady=5, sticky=tk.W)
-        self.__lblImpor = ttk.Label(self, text=self.__evento.id_importancia, font=('Ubuntu', '11', 'bold'), padding=5,
+        self.__lblImpor = ttk.Label(self,
+                                    text=ImportanciaDao.seleccionar(id_importancia=self.__evento.id_importancia)[1],
+                                    font=('Ubuntu', '11', 'bold'), padding=5,
                                     background=self.__gui.configTema['bgLabelText'])
         self.__lblImpor.grid(column=3, row=3, padx=5, pady=5, sticky=tk.W)
         ttk.Label(self, text='ETIQUETAS: ', style='lblName.TLabel', padding=5, borderwidth=2, relief='raised').grid(

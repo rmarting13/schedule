@@ -65,7 +65,7 @@ class App(ttk.Frame):
         self.__lblReferencia = ttk.LabelFrame(self, text='Niveles de importancia', padding=5, borderwidth=5,
                                               relief='solid')
         ttk.Label(self.__lblReferencia, text='IMPORTANTE', font='Helvetica 8 bold', padding=(15, 5, 15, 5),
-                  background='red', foreground='white', borderwidth=5, relief='solid', width=12).grid(column=0, row=0,
+                  background='#7d0c0c', foreground='white', borderwidth=5, relief='solid', width=12).grid(column=0, row=0,
                                                                                                       pady=5, padx=5)
         ttk.Label(self.__lblReferencia, text='NORMAL', font='Helvetica 8 bold', padding=(27, 5, 0, 5),
                   background=self.configTema['bgLabelNormal'], borderwidth=5, relief='solid', width=12).grid(column=0,

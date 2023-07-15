@@ -92,10 +92,12 @@ class FiltroDeEventos(ttk.Frame):
                 evento.id_evento,
                 evento.titulo,
                 evento.fecha_hora,
-                evento.etiquetas
+                evento.etiquetas,
+                evento.id_importancia
             )
+            print(values)
             self.__tablaTreeView.insert('', tk.END, tags=values, values=values)
-            self.__tablaTreeView.tag_configure(tagname='IMPORTANTE', font='Helvetica 8 bold', background='red',
+            self.__tablaTreeView.tag_configure(tagname='IMPORTANTE', background='#7d0c0c',
                                                foreground='white')
 
     def __buscar(self):

@@ -21,3 +21,7 @@ class PopUp(ttk.Frame):
     @staticmethod
     def advertencia():
         return messagebox.askyesno(message='Esta acción reiniciará la aplicación.\n¿Desea continuar?')
+
+    @staticmethod
+    def error(msj):
+        return messagebox.askyesno(message=f'Error!\n{msj}')

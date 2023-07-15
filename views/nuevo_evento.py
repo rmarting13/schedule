@@ -28,7 +28,7 @@ class NuevoEventoVista(ttk.Frame):
         self.__rowTag = 0
         self.__columnTag = -1
         self.__listaEtiquetas = []
-        self.__tags_in_db = list(map(lambda x: (x.id_etiqueta, x.nombre),EtiquetaDao.seleccionar()))
+        self.__tags_in_db = list(map(lambda x: (x.id_etiqueta, x.nombre), EtiquetaDao.seleccionar()))
         self.__tags_in_db_nombres = list(map(lambda x: x.nombre, EtiquetaDao.seleccionar()))
         self.__importancia_options = list(
             map(lambda x: str(x.id_importancia) + ' ' + x.nombre, ImportanciaDao.seleccionar()))
@@ -45,17 +45,16 @@ class NuevoEventoVista(ttk.Frame):
         self.__checkValue = tk.StringVar()
         self.__selectedOptionId = None
         if self.__guiParent.selectID:
-
             self.__eventoActual = EventoDao.seleccionar(id_evento=self.__guiParent.selectID)
-            fecha, hora = self.__eventoActual['fecha_hora'].split(' ')
-            self.__id = self.__eventoActual['id_evento']
-            self.__titulo.set(self.__eventoActual['titulo'])
-            self.__descripcion = self.__eventoActual['descripcion']
-            self.__importancia.set(self.__eventoActual['id_importancia'])
-            self.__fecha.set(fecha)
-            self.__duracion.set(self.__eventoActual['duracion'])
-            self.__hHora.set(hora[:2])
-            self.__mHora.set(hora[3:5])
+            imp = ImportanciaDao.seleccionar(id_importancia=self.__eventoActual.id_importancia)
+            self.__id = self.__eventoActual.id_evento
+            self.__titulo.set(self.__eventoActual.titulo)
+            self.__descripcion = self.__eventoActual.descripcion
+            self.__importancia.set(str(imp[0])+' '+imp[1])
+            self.__fecha.set(self.__eventoActual.fecha_hora.strftime('%Y-%m-%d'))
+            self.__duracion.set(self.__eventoActual.duracion)
+            self.__hHora.set(self.__eventoActual.fecha_hora.strftime('%H'))
+            self.__mHora.set(self.__eventoActual.fecha_hora.strftime('%M'))
         else:
             self.__id = None
             self.__descripcion = ''
@@ -136,10 +135,13 @@ class NuevoEventoVista(ttk.Frame):
         self.__inputTag.grid(column=1, row=5, columnspan=1, sticky=(tk.E), pady=5)
 
         if self.__guiParent.selectID:
-            tags = self.__eventoActual['etiquetas'].split(sep=',')
+            tags = self.__eventoActual.etiquetas.split(sep=',')
             for tag in tags:
                 self.__etiqueta.set(tag)
                 self.__agregarEtiqueta()
+            event_tags = EtiquetaDao.seleccionar_evento_etiquetas(id_evento=self.__id)
+            for tag in event_tags:
+                self.__listaEtiquetas.append((tag.id_etiqueta, tag.nombre))
 
         # FECHA
         ttk.Label(self.__block2, font=('Ubuntu', '12', 'bold'), text="Fecha:", justify='left').grid(column=0, row=0,
@@ -172,20 +174,30 @@ class NuevoEventoVista(ttk.Frame):
                                                                                        sticky=(tk.N), padx=2)
 
         # DURACIÓN
-        ttk.Label(self.__block2, font=('Ubuntu', '12', 'bold'), text="Duración:", justify='left').grid(column=0, row=2,
-                                                                                                       columnspan=1,
-                                                                                                       sticky=(tk.E),
-                                                                                                       pady=5)
-        self.__inputDura = ttk.Combobox(self.__block2, font=('Ubuntu', '11', 'bold'), textvariable=self.__duracion,
-                        values=['30 min', '1 hora', ' horas', '6 horas', '8 horas', '12 horas', 'Todo el día'],
-                        justify='center')
-        self.__inputDura.config(state='readonly', width=12)
+        ttk.Label(self.__block2,
+                    font=('Ubuntu', '12', 'bold'),
+                    text="Duración (minutos):",
+                    justify='left').grid(column=0, row=2,
+                    columnspan=1,
+                    sticky=(tk.E),
+                    pady=5)
+        vcmd = (self.__block2.register(self.__validate_number), '%P')
+        ivcmd = (self.__block2.register(self.__on_invalid),)
+        self.__inputDura = ttk.Entry(self.__block2,
+                                     validate='focusout', validatecommand=vcmd,
+                                     invalidcommand=ivcmd,
+                                     width=12,
+                                     font=('Ubuntu', '11', 'bold'),
+                                     textvariable=self.__duracion,
+                                     justify='center')
         self.__inputDura.grid(column=1, row=2, columnspan=1, sticky=(tk.E), pady=5)
+        self.label_error = ttk.Label(self.__block2, foreground='red')
+        self.label_error.grid(row=3, column=1, sticky=tk.W, padx=5)
 
         # AGREGAR RECORDATORIO
         canvas = tk.Canvas(self.__block2, width=40, height=40,
                            highlightbackground=self.__guiParent.configTema['hlbgCanvas'])
-        canvas.grid(column=0, row=3, columnspan=1, sticky=(tk.E), pady=5)
+        canvas.grid(column=0, row=4, columnspan=1, sticky=(tk.E), pady=5)
         img = (Image.open(self.__guiParent.configTema['imagen']))
         resized_image = img.resize((40, 40), Image.LANCZOS)
         new_image = ImageTk.PhotoImage(resized_image)
@@ -193,12 +205,12 @@ class NuevoEventoVista(ttk.Frame):
         canvas.image = new_image
         self.__recorChBx = ttk.Checkbutton(self.__block2, text="Recordatorio", command=self.__agregarRecor,
                                            variable=self.__checkValue)
-        self.__recorChBx.grid(column=1, row=3, columnspan=1, sticky=(tk.W), pady=5, padx=(5, 0))
+        self.__recorChBx.grid(column=1, row=4, columnspan=1, sticky=(tk.W), pady=5, padx=(5, 0))
         self.__inputRecor = ttk.Labelframe(self.__block2, text="Configurar recordatorio")
 
         # BOTONES ACEPTAR Y CANCELAR
         btnFrame = ttk.Labelframe(self.__block2)
-        btnFrame.grid(column=1, row=5, pady=5, columnspan=2, sticky=tk.E, )
+        btnFrame.grid(column=1, row=6, pady=5, columnspan=2, sticky=tk.E, )
         self.__btnAceptar = ttk.Button(btnFrame, style='btnAceptar.TButton', text="Aceptar",
                                        command=self.__enviarEvento, state='disabled')
         self.__btnAceptar.grid(column=0, row=0, padx=(0, 3))
@@ -221,7 +233,7 @@ class NuevoEventoVista(ttk.Frame):
             tags = self.__tags_in_db
         else:
             tags = EtiquetaDao.seleccionar_nombre(typed)
-        self.__inputTag['values'] = list(map(lambda x: str(x[0])+' '+x[1], tags))
+        self.__inputTag['values'] = list(map(lambda x: str(x.id_etiqueta)+' '+x.nombre, tags))
         self.__inputTag.event_generate('<Down>')
         self.__inputTag.after(100, self.__inputTag.focus_set)
 
@@ -229,6 +241,20 @@ class NuevoEventoVista(ttk.Frame):
         selection = self.__inputTag.selection_get().split(' ')
         self.__inputTag.set(selection[1])
         self.__selectedOptionId = int(selection[0])
+
+    def __validate_number(self, p):
+        if str.isdigit(p) or p == "":
+            self.__show_message()
+            return True
+        else:
+            return False
+
+    def __show_message(self, error='', color='white'):
+        self.label_error['text'] = error
+        self.__inputDura['foreground'] = color
+
+    def __on_invalid(self):
+        self.__show_message('El valor debe ser numérico', 'red')
 
     def actualizar(self):
         self.__cargarComponentes()
@@ -275,7 +301,7 @@ class NuevoEventoVista(ttk.Frame):
                                                                                                           sticky=(tk.N),
                                                                                                           padx=2)
             self.__inputHoraRecor.grid(column=1, row=1, sticky=(tk.E), pady=0)
-            self.__inputRecor.grid(column=1, row=4, sticky=(tk.E), pady=0)
+            self.__inputRecor.grid(column=1, row=5, sticky=(tk.E), pady=0)
         else:
             # self.__cerrarCal()
             self.__inputRecor.destroy()
@@ -338,15 +364,14 @@ class NuevoEventoVista(ttk.Frame):
                 stringRecor = self.__fechaRecor.get()+' '+self.__hRecor.get()+':'+self.__mRecor.get()+':00'
             else:
                 stringRecor = None
-            dur = int(self.__duracion.get().split(' ')[0])
-            duracion_en_min = dur*60 if dur != 30 else 30
+            print(f'ID EVENTOS ANTES DE ACTUALIZAR {self.__id}')
             values = {
                 'id_evento': self.__id,
                 'titulo': self.__titulo.get(),
                 'descripcion': self.__inputDesc.get("1.0", "end-1c"),
                 'id_importancia': int(self.__importancia.get().split(' ')[0]),
                 'fecha_hora': self.__fecha.get()+' '+self.__hHora.get()+':'+self.__mHora.get()+':00',
-                'duracion': duracion_en_min,
+                'duracion': int(self.__duracion.get()),
                 'etiquetas': None,
                 'recordatorio': stringRecor
             }
@@ -357,11 +382,16 @@ class NuevoEventoVista(ttk.Frame):
             print(f'OLD TAGS: {old_tags}')
             print(f'NEW TAGS: {new_tags}')
             if self.__guiParent.selectID: # actualización de un evento existente
-                id_evento = EventoDao.actualizar(evento)
-                tags_on_db = list(map(lambda x: x[1], EventoEtiquetaDao.seleccionar(id_evento)))
+                id_evento = self.__id
+                EventoDao.actualizar(evento)
+                tags_on_db = sorted(list(map(lambda x: x[1], EventoEtiquetaDao.seleccionar(id_evento))))
                 # relaciones_actuales = list(map(lambda x: (id_evento, x[0]), self.__listaEtiquetas))
-                if sorted(old_tags) != sorted(tags_on_db):  # pregunta si se eliminaron etiquetas al actualizar
-                    delete_tags = list(filter(lambda tg: tg not in old_tags, tags_on_db))
+                print(f'TAGS ON DB: {tags_on_db}')
+                old_tags_to_compare = sorted(list(map(lambda x: x[0], old_tags)))
+                if old_tags_to_compare != tags_on_db:  # pregunta si se eliminaron etiquetas al actualizar
+                    print('TRUE')
+                    delete_tags = list(filter(lambda tg: tg not in old_tags_to_compare, tags_on_db))
+                    print(delete_tags)
                     for tag in delete_tags:  # se eliminan las relaciones de la tabla eventos_etiquetas en la db
                         EventoEtiquetaDao.eliminar(id_evento=id_evento, id_etiqueta=tag)
             else:  # Creación de un evento nuevo
@@ -372,7 +402,8 @@ class NuevoEventoVista(ttk.Frame):
             if len(new_tags) > 0: # si se crearon nuevas etiquetas (se ejecuta tanto para actualización como nuevo evento)
                 id_etiquetas_insertadas = list(map(lambda x: EtiquetaDao.insertar(Etiqueta(nombre=x[1])), new_tags))  # etiqueta nueva
                 print('ID ETIQUETAS INSERTADAS: '+str(id_etiquetas_insertadas))
-                map(lambda x: EventoEtiquetaDao.insertar(id_evento=id_evento, id_etiqueta=x), id_etiquetas_insertadas)  # nuevas relaciones en la tabla eventos_etiquetas
+                for id_tag in id_etiquetas_insertadas:
+                    EventoEtiquetaDao.insertar(id_evento=id_evento, id_etiqueta=id_tag)  # nuevas relaciones en la tabla eventos_etiquetas
 
 
 
@@ -411,7 +442,7 @@ class NuevoEventoVista(ttk.Frame):
         self.__fecha.set(datetime.today().strftime('%Y-%m-%d'))
         self.__hHora.set(datetime.now().strftime('%H'))
         self.__mHora.set(datetime.now().strftime('%M'))
-        self.__duracion.set('1 hora')
+        self.__duracion.set('30')
         self.__fechaRecor.set(datetime.today().strftime('%Y-%m-%d'))
         if self.__inputDesc != None:
             self.__inputDesc.delete("1.0", "end-1c")

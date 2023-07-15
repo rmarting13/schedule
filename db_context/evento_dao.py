@@ -17,10 +17,9 @@ class EventoDao:
                         'GROUP BY ev.id_evento, ev.titulo, ev.fecha_hora, ev.descripcion, ev.duracion, ev.recordatorio '\
                         'ORDER BY fecha_hora DESC;'
     _SELECCIONAR_ID = 'SELECT ev.id_evento, ev.titulo, ev.fecha_hora, ev.descripcion, ev.duracion, '\
-                      'ev.recordatorio, im.nombre, GROUP_CONCAT(et.nombre) AS "etiquetas" FROM eventos ev '\
+                      'ev.recordatorio, ev.id_importancia, GROUP_CONCAT(et.nombre) AS "etiquetas" FROM eventos ev '\
                       'INNER JOIN eventos_etiquetas ee ON ev.id_evento = ee.id_evento '\
                       'INNER JOIN etiquetas et ON ee.id_etiqueta = et.id_etiqueta '\
-                      'INNER JOIN importancias im ON ev.id_importancia = im.id_importancia '\
                       'WHERE ev.id_evento = %s'\
                       'GROUP BY ev.id_evento, ev.titulo, ev.fecha_hora, ev.descripcion, ev.duracion, '\
                       'ev.recordatorio ORDER BY fecha_hora DESC;'

@@ -9,18 +9,24 @@ class ImportanciaDao:
     CRUD (Create-Read-Update-Delete)
     """
     _SELECCIONAR = 'SELECT * FROM importancias ORDER BY id_importancia'
+    _SELECCIONAR_ID = 'SELECT * FROM importancias WHERE id_importancia = %s ORDER BY id_importancia'
     _INSERTAR = 'INSERT INTO importancias(nombre) VALUES(%s)'
     _ACTUALIZAR = 'UPDATE importancias SET nombre=%s WHERE id_importancia=%s'
     _ELIMINAR = 'DELETE FROM importancias WHERE id_importancia=%s'
 
     @classmethod
-    def seleccionar(cls):
+    def seleccionar(cls, id_importancia=None):
         with Cursor() as cursor:
-            cursor.execute(cls._SELECCIONAR)
-            registros = cursor.fetchall()
-            importancias = []
-            for reg in registros:
-                importancias.append(Importancia(id_importancia=reg[0], nombre=reg[1]))
+            if id_importancia:
+                value = (id_importancia,)
+                cursor.execute(cls._SELECCIONAR_ID, value)
+                importancias = cursor.fetchone()
+            else:
+                cursor.execute(cls._SELECCIONAR)
+                registros = cursor.fetchall()
+                importancias = []
+                for reg in registros:
+                    importancias.append(Importancia(id_importancia=reg[0], nombre=reg[1]))
             return importancias
     @classmethod
     def insertar(cls, importancia: Importancia):

@@ -9,6 +9,9 @@ class EtiquetaDao:
     CRUD (Create-Read-Update-Delete)
     """
     _SELECCIONAR = 'SELECT * FROM etiquetas ORDER BY id_etiqueta'
+    _SELECCIONAR_EVENTO_ETIQUETAS = 'SELECT etiquetas.id_etiqueta, etiquetas.nombre FROM etiquetas INNER JOIN eventos_etiquetas ' \
+                                    'ON etiquetas.id_etiqueta = eventos_etiquetas.id_etiqueta ' \
+                                    'WHERE eventos_etiquetas.id_evento=%s ORDER BY etiquetas.id_etiqueta;'
     _SELECCIONAR_NOMBRE = 'SELECT * FROM etiquetas WHERE nombre LIKE %s ORDER BY nombre'
     _INSERTAR = 'INSERT INTO etiquetas(nombre) VALUES(%s)'
     _ACTUALIZAR = 'UPDATE etiquetas SET nombre=%s WHERE id_etiqueta=%s'
@@ -29,6 +32,17 @@ class EtiquetaDao:
         with Cursor() as cursor:
             value = '%'+name+'%'
             cursor.execute(cls._SELECCIONAR_NOMBRE, (value,))
+            registros = cursor.fetchall()
+            etiquetas = []
+            for reg in registros:
+                etiquetas.append(Etiqueta(id_etiqueta=reg[0], nombre=reg[1]))
+            return etiquetas
+
+    @classmethod
+    def seleccionar_evento_etiquetas(cls, id_evento):
+        with Cursor() as cursor:
+            value = (id_evento,)
+            cursor.execute(cls._SELECCIONAR_EVENTO_ETIQUETAS, value)
             registros = cursor.fetchall()
             etiquetas = []
             for reg in registros:
