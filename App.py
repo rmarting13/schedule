@@ -21,7 +21,9 @@ awdark = {'bgNombreDia': '#000',
           'fgText': 'white',
           'imagen': 'Temas/bell_dark_bg.png',
           'hlbgCanvas': '#33393b',
-          'Tags': '#6aff00'}
+          'Tags': '#6aff00',
+          'bgLabelTextNewEvent': '#2c1559'
+          }
 
 awlight = {'bgNombreDia': '#bfc9cb',
            'bgSinEventos': 'white',
@@ -33,18 +35,19 @@ awlight = {'bgNombreDia': '#bfc9cb',
            'fgText': 'black',
            'imagen': 'Temas/bell_light_bg.png',
            'hlbgCanvas': '#e8e8e7',
-           'Tags': '#2f00ff'}
+           'Tags': '#2f00ff',
+           'bgLabelTextNewEvent': '#889feb'
+           }
 
 
 class App(ttk.Frame):
     def __init__(self, parent):
-        super().__init__(parent, padding=(10))
+        super().__init__(parent, padding=10)
         parent.title("Calendario de Eventos")
-        self.grid(sticky=(tk.N, tk.S, tk.E, tk.W))
+        self.grid(row=0, column=0, sticky='nsew', padx=0, pady=0)
         parent.columnconfigure(0, weight=1)
         parent.rowconfigure(0, weight=1)
         parent.resizable(True, True)
-        self.db = BaseDeDatos('EventosDB.csv')
         self.configTema = awdark
         self.nombreTema = tk.StringVar()
         self.__primerInicio = True
@@ -55,6 +58,8 @@ class App(ttk.Frame):
         radBtn.grid(column=0, row=0)
         radBtn.invoke()
         self.cargarComponentes()
+        self.columnconfigure([0,1], weight=1)
+        self.rowconfigure([0,1,2], weight=1)
 
     def cargarComponentes(self):
         """Muestra en la app los widgets del menú lateral y de la vista semanal
@@ -141,7 +146,10 @@ class App(ttk.Frame):
         ttk.Label(self.__rightFrame, text=txt, font=('Century Gothic', '30')).grid(column=0, row=0, pady=10)
         NuevoEventoVista(self.__rightFrame, self).grid()
         self.__rightFrame.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
-        self.__btnNuevo['state'] = 'disabled'
+        if txt == 'Modificar Evento':
+            self.__btnNuevo['state'] = 'enabled'
+        else:
+            self.__btnNuevo['state'] = 'disabled'
         self.__btnVistaSem['state'] = 'enabled'
         self.__btnBuscar['state'] = 'enabled'
         self.__btnVistaMen['state'] = 'enabled'
@@ -232,10 +240,10 @@ class App(ttk.Frame):
                 self.__rightFrame.destroy()
                 self.cargarComponentes()
 
-
-root = tk.Tk()
-root.tk.call("lappend", "auto_path", "Temas")
-root.tk.call('package', 'require', 'awdark')
-root.tk.call('package', 'require', 'awlight')
-App(root).grid()
-root.mainloop()
+if __name__ == '__main__':
+    root = tk.Tk()
+    root.tk.call("lappend", "auto_path", "Temas")
+    root.tk.call('package', 'require', 'awdark')
+    root.tk.call('package', 'require', 'awlight')
+    App(root).grid()
+    root.mainloop()

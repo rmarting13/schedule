@@ -14,11 +14,11 @@ class VistaSemanal(ttk.Frame):
     """Clase que representa gráficamente los días de una semana y sus eventos"""
 
     def __init__(self, parent, gui):
-        super().__init__(parent, padding=(5))
+        super().__init__(parent, padding=5)
         self.__gui = gui
-        self.grid(column=0, row=1, sticky=(tk.N, tk.S, tk.E, tk.W))
+        self.grid(column=0, row=1, sticky='nsew')
         parent.columnconfigure(0, weight=1)
-        parent.rowconfigure(0, weight=1)
+        parent.rowconfigure(1, weight=1)
         self.__cal = Calendario()
         self.__fechaActualDT = datetime.today()
         self.__anioActual = int(self.__fechaActualDT.strftime('%Y'))

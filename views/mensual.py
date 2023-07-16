@@ -15,7 +15,7 @@ class VistaMensual(ttk.Frame):
 
     def __init__(self, parent, gui):
         super().__init__(parent, padding=(0))
-        self.grid(sticky=(tk.N, tk.S, tk.E, tk.W))
+        self.grid(row=0, column=0, sticky='nsew')
         parent.columnconfigure(0, weight=1)
         parent.rowconfigure(0, weight=1)
         self.__gui = gui
@@ -112,7 +112,6 @@ class VistaMensual(ttk.Frame):
         tablaTreeView.bind("<Double-Button-1>", self.__doubleOnClickCell)
         for row in datos:
             valores = (row.id_evento, row.titulo)
-            print(valores)
             tablaTreeView.insert('', tk.END, tags=str(row.id_importancia), values=valores)
         tablaTreeView.tag_configure(tagname='2', font='Helvetica 8 bold', background='red', foreground='white')
         self.__listaTablas.append(tablaTreeView)
@@ -137,7 +136,6 @@ class VistaMensual(ttk.Frame):
         if len(tabla) != 0 and tabla != None:
             item = tabla[0].item(tabla[0].focus(), 'values')
             id = int(item[0])
-            print(id)
             evento = EventoDao.seleccionar(id_evento=id)
             ventana = tk.Toplevel(self)
             VistaEvento(ventana, evento, self.__gui)

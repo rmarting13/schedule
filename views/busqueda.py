@@ -16,7 +16,7 @@ class FiltroDeEventos(ttk.Frame):
         super().__init__(parent, padding=(5))
         self.grid(column=0, row=1, sticky=(tk.N, tk.S, tk.E, tk.W))
         parent.columnconfigure(0, weight=1)
-        parent.rowconfigure(0, weight=1)
+        parent.rowconfigure(1, weight=1)
         self.__parent = gui
         self.__inputTitulo = tk.StringVar()
         self.__inputEtiqueta = tk.StringVar()
@@ -80,7 +80,6 @@ class FiltroDeEventos(ttk.Frame):
     def __doubleOnClickCell(self, event):
         """Define el comportamiento ciertos widgets al hacer doble click sobre un evento de la tabla."""
         id = self.__tablaTreeView.item(self.__tablaTreeView.focus(), 'values')[0]
-        print(id)
         evento = EventoDao.seleccionar(id_evento=id)
         ventana = tk.Toplevel(self)
         VistaEvento(ventana, evento, self.__parent)
@@ -96,7 +95,6 @@ class FiltroDeEventos(ttk.Frame):
                 evento.etiquetas,
                 evento.id_importancia
             )
-            print(values)
             self.__tablaTreeView.insert('', tk.END, tags=values, values=values)
             self.__tablaTreeView.tag_configure(tagname='IMPORTANTE', background='#7d0c0c',
                                                foreground='white')
