@@ -23,7 +23,8 @@ Instalar las librerías y dependencias que figuran en el archivo **'requirements
   
 - ### Nuevo evento:
   
-  ![image](https://github.com/rmarting13/schedule/assets/100733782/37964bb7-1ac4-4b44-bc0c-67c194328de8)
+  ![image](https://github.com/rmarting13/schedule/assets/100733782/e70bf16c-b45a-42f7-b82e-1d65b80e9404)
+
   
 - ### Búsqueda y filtrado:
   
@@ -31,7 +32,8 @@ Instalar las librerías y dependencias que figuran en el archivo **'requirements
   
 - ### Interfaz con tema claro:
   
-  ![image](https://github.com/rmarting13/schedule/assets/100733782/b052ac37-8d69-407c-8b7c-d452c7e6d088)
+  ![image](https://github.com/rmarting13/schedule/assets/100733782/d9372435-2d92-4d14-90ef-7026045530d1)
+
 
 
 
