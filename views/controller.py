@@ -51,9 +51,38 @@ class App(ttk.Frame):
                                                                                                              pady=5,
                                                                                                              padx=5)
         self.__lblReferencia.grid(column=0, row=2, columnspan=1, sticky=tk.N)
-        self.__rightFrame = ttk.Frame(self, padding=5, borderwidth=2, relief="groove")
-        self.__cargarVistaSemanal()
-        self.__rightFrame.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
+        # self.__rightFrame = ttk.Frame(self, padding=5, borderwidth=2, relief="groove")
+        # self.__cargarVistaSemanal()
+        # self.__rightFrame.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
+
+        #VISTA SEMANAL
+        self.__week_frame = ttk.Frame(self, padding=5, borderwidth=2, relief="groove")
+        ttk.Label(self.__week_frame, text='Vista Semanal', font=('Century Gothic', '30')).grid(column=0, row=0, pady=10)
+        self.__frameSem = VistaSemanal(self.__week_frame, self)
+        self.__week_frame.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
+
+        # VISTA MENSUAL
+        self.__month_frame = ttk.Frame(self, padding=0, borderwidth=2, relief="groove")
+        self.__frameMen = VistaMensual(self.__month_frame, self)
+        #self.__month_frame.grid(column=1, row=0, rowspan=3, padx=0, pady=0)
+
+        #NUEVO EVENTO
+        self.__new_event_frame = ttk.Frame(self, padding=5, borderwidth=2, relief="groove")
+        ttk.Label(self.__new_event_frame, text='Nuevo Evento', font=('Century Gothic', '30')).grid(column=0, row=0, pady=10)
+        NuevoEventoVista(self.__new_event_frame, controller=self).grid()
+        #self.__new_event_frame.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
+
+        #ACTUALIZAR EVENTO
+        self.__update_event_frame = ttk.Frame(self, padding=5, borderwidth=2, relief="groove")
+        ttk.Label(self.__update_event_frame, text='Actualizar Evento', font=('Century Gothic', '30')).grid(column=0, row=0, pady=10)
+        NuevoEventoVista(self.__update_event_frame, self).grid()
+        #self.__update_event_frame.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
+
+        #BUSCAR EVENTO
+        self.__search_event_frame = ttk.Frame(self, padding=5, borderwidth=2, relief="groove")
+        ttk.Label(self.__search_event_frame, text='Búsqueda', font=('Century Gothic', '30')).grid(column=0, row=0, pady=10)
+        self.__frameFiltro = FiltroDeEventos(self.__search_event_frame, self)
+        #self.__search_event_frame.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
 
     def __cargarMenuLateral(self):
         """Muestra en el frame izquierdo, todos los botones corresponidentes a la interfaz del menú principal."""
@@ -81,13 +110,18 @@ class App(ttk.Frame):
     def __cargarVistaSemanal(self):
         """Mestra en el frame derecho, los widgets que representan una semana, incluyendo los días y la tabla
         con eventos de cada día."""
-        self.__frameMen = None
-        self.__frameFiltro = None
-        self.__rightFrame.destroy()
-        self.__rightFrame = ttk.Frame(self, padding=5, borderwidth=2, relief="groove")
-        ttk.Label(self.__rightFrame, text='Vista Semanal', font=('Century Gothic', '30')).grid(column=0, row=0, pady=10)
-        self.__frameSem = VistaSemanal(self.__rightFrame, self)
-        self.__rightFrame.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
+        # self.__frameMen = None
+        # self.__frameFiltro = None
+        #self.__rightFrame.destroy()
+        # self.__rightFrame = ttk.Frame(self, padding=5, borderwidth=2, relief="groove")
+        # ttk.Label(self.__rightFrame, text='Vista Semanal', font=('Century Gothic', '30')).grid(column=0, row=0, pady=10)
+        # self.__frameSem = VistaSemanal(self.__rightFrame, self)
+        # self.__rightFrame.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
+        self.__month_frame.grid_remove()
+        self.__new_event_frame.grid_remove()
+        self.__search_event_frame.grid_remove()
+        self.__week_frame.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
+        #self.__week_frame.tkraise()
         self.__btnVistaSem['state'] = 'disabled'
         self.__btnBuscar['state'] = 'enabled'
         self.__btnVistaMen['state'] = 'enabled'
@@ -98,12 +132,16 @@ class App(ttk.Frame):
     def __cargarVistaMensual(self):
         """Mestra en el frame derecho, los widgets que representan un mes, incluyendo los días y la tabla
         con eventos de cada día."""
-        self.__frameSem = None
-        self.__frameFiltro = None
-        self.__rightFrame.destroy()
-        self.__rightFrame = ttk.Frame(self, padding=0, borderwidth=2, relief="groove")
-        self.__frameMen = VistaMensual(self.__rightFrame, self)
-        self.__rightFrame.grid(column=1, row=0, rowspan=3, padx=0, pady=0)
+        # self.__frameSem = None
+        # self.__frameFiltro = None
+        # self.__rightFrame.destroy()
+        # self.__rightFrame = ttk.Frame(self, padding=0, borderwidth=2, relief="groove")
+        # self.__frameMen = VistaMensual(self.__rightFrame, self)
+        # self.__rightFrame.grid(column=1, row=0, rowspan=3, padx=0, pady=0)
+        self.__new_event_frame.grid_remove()
+        self.__search_event_frame.grid_remove()
+        self.__week_frame.grid_remove()
+        self.__month_frame.grid(column=1, row=0, rowspan=3, padx=0, pady=0)
         self.__btnVistaSem['state'] = 'enabled'
         self.__btnBuscar['state'] = 'enabled'
         self.__btnVistaMen['state'] = 'disabled'
@@ -113,11 +151,15 @@ class App(ttk.Frame):
 
     def __crearEvento(self, txt):
         """Muestra en el frame derecho, la interfaz del formulario que debe completar el usuario para crear un evento."""
-        self.__rightFrame.destroy()
-        self.__rightFrame = ttk.Frame(self, padding=5, borderwidth=2, relief="groove")
-        ttk.Label(self.__rightFrame, text=txt, font=('Century Gothic', '30')).grid(column=0, row=0, pady=10)
-        NuevoEventoVista(self.__rightFrame, self).grid()
-        self.__rightFrame.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
+        # self.__rightFrame.destroy()
+        # self.__rightFrame = ttk.Frame(self, padding=5, borderwidth=2, relief="groove")
+        # ttk.Label(self.__rightFrame, text=txt, font=('Century Gothic', '30')).grid(column=0, row=0, pady=10)
+        # NuevoEventoVista(self.__rightFrame, self).grid()
+        # self.__rightFrame.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
+        self.__search_event_frame.grid_remove()
+        self.__week_frame.grid_remove()
+        self.__month_frame.grid_remove()
+        self.__new_event_frame.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
         if txt == 'Modificar Evento':
             self.__btnNuevo['state'] = 'enabled'
         else:
@@ -136,13 +178,17 @@ class App(ttk.Frame):
 
     def __buscar(self):
         """Muestra en el frame derecho, la interfaz de búsqueda y filtro."""
-        self.__frameMen = None
-        self.__frameSem = None
-        self.__rightFrame.destroy()
-        self.__rightFrame = ttk.Frame(self, padding=5, borderwidth=2, relief="groove")
-        ttk.Label(self.__rightFrame, text='Búsqueda', font=('Century Gothic', '30')).grid(column=0, row=0, pady=10)
-        self.__frameFiltro = FiltroDeEventos(self.__rightFrame, self)
-        self.__rightFrame.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
+        # self.__frameMen = None
+        # self.__frameSem = None
+        # self.__rightFrame.destroy()
+        # self.__rightFrame = ttk.Frame(self, padding=5, borderwidth=2, relief="groove")
+        # ttk.Label(self.__rightFrame, text='Búsqueda', font=('Century Gothic', '30')).grid(column=0, row=0, pady=10)
+        # self.__frameFiltro = FiltroDeEventos(self.__rightFrame, self)
+        # self.__rightFrame.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
+        self.__week_frame.grid_remove()
+        self.__month_frame.grid_remove()
+        self.__new_event_frame.grid_remove()
+        self.__search_event_frame.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
         self.__btnBuscar['state'] = 'disabled'
         self.__btnVistaMen['state'] = 'enabled'
         self.__btnVistaSem['state'] = 'enabled'
@@ -160,12 +206,18 @@ class App(ttk.Frame):
         encuentre activa en ese momento."""
         EventoDao.eliminar(id_evento=self.selectID)
         PopUp(self).mensaje('Evento eliminado con éxito!')
-        if self.__frameFiltro != None:
-            self.__frameFiltro.actualizar()
-        if self.__frameSem != None:
-            self.__frameSem.actualizar()
-        if self.__frameMen != None:
-            self.__frameMen.actualizar()
+        # if self.__frameFiltro != None:
+        #     self.__frameFiltro.actualizar()
+        # if self.__frameSem != None:
+        #     self.__frameSem.actualizar()
+        # if self.__frameMen != None:
+        #    self.__frameMen.actualizar()
+        self.actualizar()
+
+    def actualizar(self):
+        self.__frameFiltro.actualizar()
+        self.__frameSem.actualizar()
+        self.__frameMen.actualizar()
 
     def setTheme(self):
         """Cambia la configuración del tema elegido en la interfaz. Para que los cambios
@@ -209,7 +261,15 @@ class App(ttk.Frame):
                     s.map('btnSigAnt.TButton',
                           background=[('!active', '#53a9f4'), ('pressed', '#0082f4'), ('active', '#88c2f5')])
                     self.configTema = config.awlight
-                self.__rightFrame.destroy()
+                # self.__week_frame.destroy()
+                # self.__month_frame.destroy()
+                # self.__new_event_frame.destroy()
+                # self.__update_event_frame.destroy()
+                # self.__search_event_frame.destroy()
+                self.__search_event_frame.grid_remove()
+                self.__week_frame.grid_remove()
+                self.__month_frame.grid_remove()
+                self.__new_event_frame.grid_remove()
                 self.cargarComponentes()
 
 

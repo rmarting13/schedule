@@ -15,7 +15,7 @@ class Login(tk.Frame):
         # self.grid(row=0, column=0, sticky='nsew', padx=0, pady=0)
         self.parent.columnconfigure(0, weight=1)
         self.parent.rowconfigure(0, weight=1)
-        self.parent.resizable(True, True)
+        self.parent.resizable(False, False)
         self.parent.geometry('340x470')
         self.parent.configure(bg='#8151cf')
 
@@ -35,7 +35,7 @@ class Login(tk.Frame):
 
         # Creating widgets
         self.login_label = tk.Label(
-            self.frame, text="Login", bg='#3a3a3b', fg="#00ffae", font=("Ubuntu", 30))
+            self.frame, text="Login", bg='#3a3a3b', fg="#00ffae", font=("Ubuntu", 30), pady=10)
         self.username_label = tk.Label(
             self.frame, text="Usuario:", bg='#8151cf', fg="#FFFFFF", font=("Ubuntu", 12))
         self.username_entry = tk.Entry(self.frame, font=("Ubuntu", 12))
@@ -46,8 +46,8 @@ class Login(tk.Frame):
             self.frame, text="Login", bg="#3243d9", fg="#FFFFFF", font=("Ubuntu", 12), command=self.login)
 
         # Placing widgets on the screen
-        self.icon_label.grid(row=0, column=0, columnspan=2, pady=10)
-        self.login_label.grid(row=1, column=0, columnspan=2, sticky="news", pady=10)
+        self.icon_label.grid(row=0, column=0, columnspan=2, pady=5)
+        self.login_label.grid(row=1, column=0, columnspan=2, sticky="news", pady=5)
         self.username_label.grid(row=2, column=0)
         self.username_entry.grid(row=2, column=1, pady=20)
         self.password_label.grid(row=3, column=0)

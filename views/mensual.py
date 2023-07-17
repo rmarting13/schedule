@@ -85,7 +85,7 @@ class VistaMensual(ttk.Frame):
                 if eventosDelDia:
                     self.__crearTablaTreeView(frameDay, eventosDelDia, height)
                 else:
-                    ttk.Label(frameDay, text='SIN EVENTOS', font='Helvetica 8', width=10, padding=pad,
+                    ttk.Label(frameDay, text='SIN\nEVENTOS', font='Helvetica 7', justify='center', width=10, padding=pad,
                               background=self.__gui.configTema['bgSinEventos']).grid()
                 frameDay.grid(row=self.__mes.index(week) + 1, column=c, padx=2, pady=2)
                 if date.month != mes:
@@ -104,7 +104,7 @@ class VistaMensual(ttk.Frame):
         """Crea una tabla tk.TreeView en la que se muestran cada uno de los eventos correspondientes."""
         tablaTreeView = ttk.Treeview(frame, columns=('id', 'ev'), show='', selectmode="extended", height=altura,
                                      padding=5)
-        tablaTreeView["displaycolumns"] = ('ev')
+        tablaTreeView["displaycolumns"] = 'ev'
         tablaTreeView.column('ev', width=95, anchor=tk.W)
         tablaTreeView.heading('ev', text="Eventos", anchor=tk.CENTER)
         tablaTreeView.grid(column=0, row=1)
