@@ -24,4 +24,4 @@ class PopUp(ttk.Frame):
 
     @staticmethod
     def error(msj):
-        return messagebox.askyesno(message=f'Error!\n{msj}')
+        return messagebox.showerror(message=f'Error!\n{msj}')

@@ -494,7 +494,7 @@ class NuevoEventoVista(ttk.Frame):
         por modificación de un evento."""
         self.__titulo.set('')
         self.__descripcion = ''
-        self.__importancia.set(self.__importancia_options[0])
+        self.__importancia.set(self.__importancia_options[0] if self.__importancia_options else '')
         self.__fecha.set(datetime.today().strftime('%Y-%m-%d'))
         self.__hHora.set(datetime.now().strftime('%H'))
         self.__mHora.set(datetime.now().strftime('%M'))

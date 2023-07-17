@@ -7,6 +7,7 @@ from tkcalendar import Calendar as tkCalendar
 from Archivo import BaseDeDatos
 from db_context.evento_dao import EventoDao
 from views.evento import VistaEvento
+from views.popup import PopUp
 
 
 class FiltroDeEventos(ttk.Frame):
@@ -111,7 +112,11 @@ class FiltroDeEventos(ttk.Frame):
             filtro.update({'etiqueta': self.__inputEtiqueta.get()})
         if len(filtro.keys()) != 0:
             listaFiltrada = EventoDao.seleccionar(**filtro)
-            self.__insertarElementos(listaFiltrada)
+            print(listaFiltrada)
+            if listaFiltrada:
+                self.__insertarElementos(listaFiltrada)
+            else:
+                PopUp.error('No se encontraron eventos relacionados con la búsqueda.')
         else:
             self.__insertarElementos(EventoDao.seleccionar())
 
