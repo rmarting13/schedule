@@ -9,46 +9,18 @@ from views.mensual import VistaMensual
 from views.nuevo_evento import NuevoEventoVista
 from views.popup import PopUp
 from views.semanal import VistaSemanal
-
-# Configuración de los colores de la interfaz según el tema
-awdark = {'bgNombreDia': '#000',
-          'bgSinEventos': '#555a57',
-          'bgDiaMes': '#490d56',
-          'bgHoy': '#6c33e1',
-          'bgNoDiaMes': '#7f5c66',
-          'bgLabelText': '#242421',
-          'bgLabelNormal': '#595953',
-          'fgText': 'white',
-          'imagen': 'Temas/bell_dark_bg.png',
-          'hlbgCanvas': '#33393b',
-          'Tags': '#6aff00',
-          'bgLabelTextNewEvent': '#2c1559'
-          }
-
-awlight = {'bgNombreDia': '#bfc9cb',
-           'bgSinEventos': 'white',
-           'bgDiaMes': '#bbbbba',
-           'bgHoy': '#d9d000',
-           'bgNoDiaMes': '#929290',
-           'bgLabelText': 'white',
-           'bgLabelNormal': '#e4e4e3',
-           'fgText': 'black',
-           'imagen': 'Temas/bell_light_bg.png',
-           'hlbgCanvas': '#e8e8e7',
-           'Tags': '#2f00ff',
-           'bgLabelTextNewEvent': '#889feb'
-           }
+from themes import config
 
 
 class App(ttk.Frame):
     def __init__(self, parent):
         super().__init__(parent, padding=10)
         parent.title("Calendario de Eventos")
-        self.grid(row=0, column=0, sticky='nsew', padx=0, pady=0)
+        #self.grid(row=0, column=0, sticky='nsew', padx=0, pady=0)
         parent.columnconfigure(0, weight=1)
         parent.rowconfigure(0, weight=1)
         parent.resizable(True, True)
-        self.configTema = awdark
+        self.configTema = config.awdark
         self.nombreTema = tk.StringVar()
         self.__primerInicio = True
         self.selectID = None
@@ -225,7 +197,7 @@ class App(ttk.Frame):
                           background=[('!active', '#d40000'), ('pressed', '#d46300'), ('active', '#ff3d45')])
                     s.map('btnSigAnt.TButton',
                           background=[('!active', '#6a20a2'), ('pressed', '#4a1572'), ('active', '#a046e5')])
-                    self.configTema = awdark
+                    self.configTema = config.awdark
                 else:
                     s.configure('lblName.TLabel', font=('Nueva Std Cond', '10', 'bold'))
                     s.configure('TButton', font=('Verdana', '8', 'bold'))
@@ -236,13 +208,14 @@ class App(ttk.Frame):
                           background=[('!active', '#ff0000'), ('pressed', '#b40000'), ('active', '#ff5252')])
                     s.map('btnSigAnt.TButton',
                           background=[('!active', '#53a9f4'), ('pressed', '#0082f4'), ('active', '#88c2f5')])
-                    self.configTema = awlight
+                    self.configTema = config.awlight
                 self.__rightFrame.destroy()
                 self.cargarComponentes()
 
+
 if __name__ == '__main__':
     root = tk.Tk()
-    root.tk.call("lappend", "auto_path", "Temas")
+    root.tk.call("lappend", "auto_path", "themes")
     root.tk.call('package', 'require', 'awdark')
     root.tk.call('package', 'require', 'awlight')
     App(root).grid()

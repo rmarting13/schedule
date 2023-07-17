@@ -1,3 +1,5 @@
+from tkinter import messagebox
+
 from mysql import connector as con
 from mysql.connector import errorcode
 import sys
@@ -8,11 +10,17 @@ class Connection:
     Clase encargada de la creación del pool de conexiones con la base de datos
     """
     _DATABASE = 'calendario'
-    _USERNAME = 'admin'
-    _PASSWORD = 'admin'
-    _DB_PORT = '3306'
+    _USERNAME = None
+    _PASSWORD = None
+    #_DB_PORT = '3306'
     _HOST = 'localhost'
     _conn = None
+
+
+    @classmethod
+    def set_user_pass(cls, user=None, passw=None):
+        cls._USERNAME = user
+        cls._PASSWORD = passw
 
     @classmethod
     def create_database(cls):
@@ -21,7 +29,7 @@ class Connection:
                 user=cls._USERNAME,
                 password=cls._PASSWORD,
                 host=cls._HOST,
-                port=cls._DB_PORT,
+                #port=cls._DB_PORT,
             )
             with cls._conn.cursor() as cursor:
                 with open('db_context/db_backup.sql', 'r') as sql_file:
@@ -46,7 +54,7 @@ class Connection:
                     user=cls._USERNAME,
                     password=cls._PASSWORD,
                     host=cls._HOST,
-                    port=cls._DB_PORT,
+                    #port=cls._DB_PORT,
                     database=cls._DATABASE,
                 )
                 print(f'Conexión exitosa: {cls._conn}')
@@ -56,12 +64,14 @@ class Connection:
                     cls.create_database()
                     cls._conn = None
                     return cls.get_connection()
-                else:
-                    print(err)
-                    sys.exit()
-            except Exception as e:
-                print(f'Ocurrió un error: {e}')
-                sys.exit()
+                elif err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+                    messagebox.showerror(title="Acceso denegado", message="El usuario y/o contraseña ingresados son incorrectos.")
+            #     else:
+            #         print(err)
+            #         sys.exit()
+            # except Exception as e:
+            #     print(f'Ocurrió un error: {e}')
+            #     sys.exit()
         else:
             return cls._conn
 
