@@ -55,3 +55,10 @@ class Calendario(Calendar):
                 ini += 7
                 fin += 7
         return listaSemanas
+
+
+if __name__ == '__main__':
+    cal = Calendario()
+    days = cal.listaDeSemanas(anio=2023, mes=7)
+    for day in days:
+        print(day)
