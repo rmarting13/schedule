@@ -103,16 +103,15 @@ class VistaMensual(ttk.Frame):
             self.__anioActual), font=('Century Gothic', '12', 'bold'), padding=5, borderwidth=2, relief="sunken")
         self.__lblNombreMes.grid(column=1, row=0, columnspan=1, padx=0, pady=5)
         self.__mesFrame = ttk.Frame(self, padding=5)
-
         self.__five_row_month = MonthWidget(self.__mesFrame, rows=5, controller=self.__gui)
-        self.__five_row_month.grid()
+        #self.__five_row_month.grid()
         self.__six_row_month = MonthWidget(self.__mesFrame, rows=6, controller=self.__gui)
-        self.__six_row_month.grid()
+        #self.__six_row_month.grid()
         if len(self.__mes) == 6:
-            self.__show_month(self.__six_row_month, height=2)
+            self.__current_month_widget = self.__six_row_month
         else:
-            self.__show_month(self.__five_row_month, height=3)
-
+            self.__current_month_widget = self.__five_row_month
+        self.__show_month(self.__current_month_widget, height=3)
         self.__mesFrame.grid(column=0, row=1, columnspan=3, pady=0, padx=0)
 
 
@@ -254,7 +253,8 @@ class VistaMensual(ttk.Frame):
 
     def __anterior(self):
         """Permite generar gráficamente los widgets del mes anterior."""
-        self.__mesFrame.grid_remove()
+        #self.__mesFrame.grid_remove()
+        self.__current_month_widget.grid_remove()
         if self.__mesActual - 1 < 1:
             self.__anioActual -= 1
             self.__mesActual = 12
@@ -265,15 +265,17 @@ class VistaMensual(ttk.Frame):
         #self.__mesFrame = ttk.Frame(self, padding=5, borderwidth=2, relief="groove")
         #self.__mostrarMes(self.__mesFrame, self.__mesActual).grid()
         if len(self.__mes) == 6:
-            self.__show_month(self.__six_row_month, height=2)
+            self.__current_month_widget = self.__six_row_month
         else:
-            self.__show_month(self.__five_row_month, height=3)
-        self.__mesFrame.grid(column=0, row=1, columnspan=3, pady=0, padx=0)
+            self.__current_month_widget = self.__five_row_month
+        self.__show_month(self.__current_month_widget, height=3)
+        #self.__mesFrame.grid(column=0, row=1, columnspan=3, pady=0, padx=0)
         #self.__mesFrame.grid(column=0, row=1, columnspan=3, pady=5, padx=5)
 
     def __siguiente(self):
         """Permite generar gráficamente los widgets del mes siguiente."""
-        self.__mesFrame.grid_remove()
+        #self.__mesFrame.grid_remove()
+        self.__current_month_widget.grid_remove()
         if self.__mesActual + 1 > 12:
             self.__anioActual += 1
             self.__mesActual = 1
@@ -284,10 +286,11 @@ class VistaMensual(ttk.Frame):
         #self.__mesFrame = ttk.Frame(self, padding=5, borderwidth=2, relief="groove")
         #self.__mostrarMes(self.__mesFrame, self.__mesActual).grid()
         if len(self.__mes) == 6:
-            self.__show_month(self.__six_row_month, height=2)
+            self.__current_month_widget = self.__six_row_month
         else:
-            self.__show_month(self.__five_row_month, height=3)
-        self.__mesFrame.grid(column=0, row=1, columnspan=3, pady=0, padx=0)
+            self.__current_month_widget = self.__five_row_month
+        self.__show_month(self.__current_month_widget, height=3)
+        #self.__mesFrame.grid(column=0, row=1, columnspan=3, pady=0, padx=0)
         #self.__mesFrame.grid(column=0, row=1, columnspan=3, pady=5, padx=5)
 
 if __name__ == '__main__':
