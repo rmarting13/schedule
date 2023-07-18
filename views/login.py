@@ -27,7 +27,7 @@ class Login(tk.Frame):
         self.icon_label = tk.Frame(self.frame, background='#8151cf')
         canvas = tk.Canvas(self.icon_label, width=180, height=150, background='#8151cf',highlightbackground='#8151cf')
         canvas.grid(column=0, row=0, sticky='nsew', pady=1)
-        img = Image.open('/home/rmarting13/Documents/schedule-repo/schedule/themes/calendar.png')
+        img = Image.open('/home/rmarting13/Documentos/schedule/themes/calendar.png')
         resized_image = img.resize((180, 150), Image.LANCZOS)
         new_image = ImageTk.PhotoImage(resized_image)
         canvas.create_image(2, 2, anchor=tk.NW, image=new_image)
@@ -43,7 +43,7 @@ class Login(tk.Frame):
         self.password_label = tk.Label(
             self.frame, text="Constraseña:", bg='#8151cf', fg="#FFFFFF", font=("Ubuntu", 12))
         self.login_button = tk.Button(
-            self.frame, text="Login", bg="#3243d9", fg="#FFFFFF", font=("Ubuntu", 12), command=self.login)
+            self.frame, text="Login", bg="#cc5800", fg="#FFFFFF", font=("Ubuntu", 12), command=self.login)
 
         # Placing widgets on the screen
         self.icon_label.grid(row=0, column=0, columnspan=2, pady=5)

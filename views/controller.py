@@ -19,8 +19,10 @@ class App(ttk.Frame):
         #self.grid(row=0, column=0, sticky='nsew', padx=0, pady=0)
         parent.columnconfigure(0, weight=1)
         parent.rowconfigure(0, weight=1)
-        parent.resizable(True, True)
+        parent.resizable(False, False)
         self.configTema = config.awdark
+        self.parent = parent
+        self.parent.configure(bg=self.configTema['mainBg'])
         self.nombreTema = tk.StringVar()
         self.__primerInicio = True
         self.selectID = None
@@ -226,7 +228,9 @@ class App(ttk.Frame):
         if self.__primerInicio:
             s.theme_use(self.nombreTema.get())
             s.configure('lblName.TLabel', font=('Nueva Std Cond', '10', 'bold'))
-            s.configure('WeekFrame.TFrame', background='#9763f8')
+            s.configure('WeekFrame.TFrame', background='#960000')
+            s.configure('DayFrame.TFrame', background='#58278c')
+            s.configure('NoDayFrame.TFrame', background='#424242')
             s.configure('TButton', font=('Verdana', '8', 'bold'))
             s.map('btnAceptar.TButton',
                   background=[('!active', '#0047cc'), ('pressed', '#03009d'), ('active', '#3b7fff')])
@@ -241,7 +245,9 @@ class App(ttk.Frame):
                 s.theme_use(self.nombreTema.get())
                 if self.nombreTema.get() == 'awdark':
                     s.configure('lblName.TLabel', font=('Nueva Std Cond', '10', 'bold'))
-                    s.configure('WeekFrame.TFrame', background='#9763f8')
+                    s.configure('WeekFrame.TFrame', background='#960000')
+                    s.configure('DayFrame.TFrame', background='#58278c')
+                    s.configure('NoDayFrame.TFrame', background='#424242')
                     s.configure('TButton', font=('Verdana', '8', 'bold'))
                     s.map('btnAceptar.TButton',
                           background=[('!active', '#0047cc'), ('pressed', '#03009d'), ('active', '#3b7fff')])
@@ -250,10 +256,13 @@ class App(ttk.Frame):
                     s.map('btnSigAnt.TButton',
                           background=[('!active', '#6a20a2'), ('pressed', '#4a1572'), ('active', '#a046e5')])
                     self.configTema = config.awdark
+                    self.parent.configure(bg=self.configTema['mainBg'])
                 else:
                     s.configure('lblName.TLabel', font=('Nueva Std Cond', '10', 'bold'))
                     s.configure('TButton', font=('Verdana', '8', 'bold'))
                     s.configure('WeekFrame.TFrame', background='#185ceb')
+                    s.configure('DayFrame.TFrame', background=config.awlight['bgDiaMes'])
+                    s.configure('NoDayFrame.TFrame', background=config.awlight['bgNoDiaMes'])
                     s.map('btnAceptar.TButton',
                           background=[('!active', '#0ed145'), ('pressed', '#1f9d43'), ('active', '#2cfe67')])
                     s.map('btnCancelar.TButton',
@@ -261,6 +270,7 @@ class App(ttk.Frame):
                     s.map('btnSigAnt.TButton',
                           background=[('!active', '#53a9f4'), ('pressed', '#0082f4'), ('active', '#88c2f5')])
                     self.configTema = config.awlight
+                    self.parent.configure(bg=self.configTema['mainBg'])
                 # self.__week_frame.destroy()
                 # self.__month_frame.destroy()
                 # self.__new_event_frame.destroy()

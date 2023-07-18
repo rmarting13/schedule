@@ -10,8 +10,8 @@ class Connection:
     Clase encargada de la creación del pool de conexiones con la base de datos
     """
     _DATABASE = 'calendario'
-    _USERNAME = None
-    _PASSWORD = None
+    _USERNAME = 'root'
+    _PASSWORD = '167943258'
     #_DB_PORT = '3306'
     _HOST = 'localhost'
     _conn = None

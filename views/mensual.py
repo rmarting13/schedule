@@ -6,14 +6,69 @@ from calendar import Calendar
 from tkcalendar import Calendar as tkCalendar
 from Archivo import BaseDeDatos
 from db_context.evento_dao import EventoDao
+from themes import config
 from views.calendario import Calendario
 from views.evento import VistaEvento
+
+class MonthWidget(ttk.Frame):
+    def __init__(self, parent, rows=None, controller=None):
+        super().__init__(parent, style='WeekFrame.TFrame', padding=1)
+        self.grid(row=0, column=0, sticky='nsew')
+        parent.columnconfigure(0, weight=1)
+        parent.rowconfigure(0, weight=1)
+        self.controller = controller
+        self.__cal = Calendario()
+        self.rows = rows
+        self.days_header_list = []
+        self.days_content_list = []
+        self.days_frame_list = []
+        self.__cargar_componentes()
+
+    def __cargar_componentes(self):
+            """Genera y retorna un frame que contiene cada uno de los widgets que representan los días del mes, incluyendo
+            sus respectivas tablas con eventos."""
+            #monthFrame = ttk.Frame(frame, style='WeekFrame.TFrame', padding=5)
+            for m in range(7):
+                labelDay = ttk.Label(self, width=13, text=self.__cal.nombreDelDia(m, 1), font='Helvetica 10 bold', foreground='white',
+                                     justify='center', background=self.controller.configTema['bgNombreDia'], borderwidth=2,
+                                     relief='solid')
+                if labelDay['text'] == 'Domingo':
+                    labelDay['foreground'] = 'red'
+                if labelDay['text'] == 'Sábado':
+                    labelDay['foreground'] = 'blue'
+                labelDay.grid(column=m, row=0, padx=0, pady=0)
+            if self.rows == 6:
+                pad = (21, 18, 21, 18)
+            else:
+                pad = (21, 28, 21, 28)
+
+            for week in range(self.rows):
+                for day in range(7):
+                    frameDay = ttk.Frame(self,width=7,height=7, borderwidth=2, relief='solid', style='DayFrame.TFrame')
+                    self.days_frame_list.append(frameDay)
+                    day_header_label = ttk.Label(frameDay, font='Helvetica 12 bold',
+                              background=self.controller.configTema['bgDiaMes'])
+                    if day == 6:
+                        day_header_label['foreground'] = 'blue'
+                    if day == 0:
+                        day_header_label['foreground'] = 'red'
+                    self.days_header_list.append(day_header_label)
+                    day_header_label.grid(padx=0, pady=0)
+                    day_content_label = ttk.Label(frameDay, text='SIN\nEVENTOS', font='Helvetica 8', justify='center',
+                              padding=pad, background=self.controller.configTema['bgSinEventos'])
+                    self.days_content_list.append(day_content_label)
+                    day_content_label.grid()
+                    frameDay.grid(row=week+1, column=day, padx=1, pady=1)
+
+
+
+
 
 
 class VistaMensual(ttk.Frame):
     """Clase que representa gráficamente los días de un mes completo y sus eventos"""
 
-    def __init__(self, parent, gui):
+    def __init__(self, parent, gui=None):
         super().__init__(parent, padding=(0))
         self.grid(row=0, column=0, sticky='nsew')
         parent.columnconfigure(0, weight=1)
@@ -39,8 +94,19 @@ class VistaMensual(ttk.Frame):
             self.__anioActual), font=('Century Gothic', '12', 'bold'), padding=5, borderwidth=2, relief="sunken")
         self.__lblNombreMes.grid(column=1, row=0, columnspan=1, padx=0, pady=5)
         self.__mesFrame = ttk.Frame(self, padding=5)
-        self.__mostrarMes(self.__mesFrame, self.__mesActual).grid()
+        #self.__mostrarMes(self.__mesFrame, self.__mesActual).grid()
+        self.__five_row_month = MonthWidget(self.__mesFrame, rows=5, controller=self.__gui)
+        self.__five_row_month.grid()
+        self.__six_row_month = MonthWidget(self.__mesFrame, rows=6, controller=self.__gui)
+        self.__six_row_month.grid()
+        if len(self.__mes) == 6:
+            self.__show_month(self.__six_row_month, height=2)
+        else:
+            self.__show_month(self.__five_row_month, height=3)
+
         self.__mesFrame.grid(column=0, row=1, columnspan=3, pady=0, padx=0)
+
+
 
     def actualizar(self):
         """Vuelve a cargar los widgets de los días del mes y sus tablas con eventos actualizadas desde el archivo .csv"""
@@ -48,66 +114,95 @@ class VistaMensual(ttk.Frame):
         self.__mostrarMes(self.__mesFrame, self.__mesActual).grid()
         self.__mesFrame.grid(column=0, row=1, columnspan=3, pady=0, padx=0)
 
-    def __mostrarMes(self, frame, mes):
-        """Genera y retorna un frame que contiene cada uno de los widgets que representan los días del mes, incluyendo
-        sus respectivas tablas con eventos."""
-        self.__listaTablas = []
-        fechasConEventos = self.__db.mapearFechas()
-        monthFrame = ttk.Frame(frame, style='WeekFrame.TFrame', padding=5)
-        self.labels = []
-        dias = []
-        for m in range(7):
-            labelDay = ttk.Label(monthFrame, width=9, text=self.__cal.nombreDelDia(m, 1), font='Helvetica 12 bold',
-                                 padding=(18, 0, 5, 0), background=self.__gui.configTema['bgNombreDia'], borderwidth=2,
-                                 relief='solid')
-            if labelDay['text'] == 'Domingo':
-                labelDay['foreground'] = 'red'
-            if labelDay['text'] == 'Sábado':
-                labelDay['foreground'] = 'blue'
-            labelDay.grid(column=m, row=0, padx=2, pady=2)
-            dias.append(labelDay)
-        self.labels.append(dias)
-        if len(self.__mes) == 6:
-            pad = (21, 18, 21, 18)
-            height = 2
-        else:
-            pad = (21, 28, 21, 28)
-            height = 3
-        for week in self.__mes:
-            labels_row = []
-            for c, date in enumerate(week):
-                frameDay = ttk.Frame(monthFrame, borderwidth=2, relief='solid')
-                label = ttk.Label(frameDay, width=10, text=str(date.day), font='Helvetica 12 bold',
-                                  padding=(5, 0, 5, 0), background=self.__gui.configTema['bgDiaMes'])
-                label.grid(padx=2, pady=2)
-                diaFormat = date.strftime('%Y-%m-%d')
-                eventosDelDia = EventoDao.seleccionar_fecha(fecha=diaFormat)
-                if eventosDelDia:
-                    self.__crearTablaTreeView(frameDay, eventosDelDia, height)
-                else:
-                    ttk.Label(frameDay, text='SIN\nEVENTOS', font='Helvetica 7', justify='center', width=10, padding=pad,
-                              background=self.__gui.configTema['bgSinEventos']).grid()
-                frameDay.grid(row=self.__mes.index(week) + 1, column=c, padx=2, pady=2)
-                if date.month != mes:
-                    label['background'] = self.__gui.configTema['bgNoDiaMes']
-                if c == 6:
-                    label['foreground'] = 'blue'
-                if c == 0:
-                    label['foreground'] = 'red'
-                if date == self.__fechaActualDT.date():
-                    label['background'] = self.__gui.configTema['bgHoy']
-                labels_row.append(label)
-            self.labels.append(labels_row)
-        return monthFrame
+    # def __mostrarMes(self, frame, mes):
+    #     """Genera y retorna un frame que contiene cada uno de los widgets que representan los días del mes, incluyendo
+    #     sus respectivas tablas con eventos."""
+    #     self.__listaTablas = []
+    #     fechasConEventos = self.__db.mapearFechas()
+    #     monthFrame = ttk.Frame(frame, style='WeekFrame.TFrame', padding=5)
+    #     self.labels = []
+    #     dias = []
+    #     for m in range(7):
+    #         labelDay = ttk.Label(monthFrame, width=9, text=self.__cal.nombreDelDia(m, 1), font='Helvetica 12 bold',
+    #                              padding=(18, 0, 5, 0), background=self.__gui.configTema['bgNombreDia'], borderwidth=2,
+    #                              relief='solid')
+    #         if labelDay['text'] == 'Domingo':
+    #             labelDay['foreground'] = 'red'
+    #         if labelDay['text'] == 'Sábado':
+    #             labelDay['foreground'] = 'blue'
+    #         labelDay.grid(column=m, row=0, padx=2, pady=2)
+    #         dias.append(labelDay)
+    #     self.labels.append(dias)
+    #     if len(self.__mes) == 6:
+    #         pad = (21, 18, 21, 18)
+    #         height = 2
+    #     else:
+    #         pad = (21, 28, 21, 28)
+    #         height = 3
+    #     for week in self.__mes:
+    #         labels_row = []
+    #         for c, date in enumerate(week):
+    #             frameDay = ttk.Frame(monthFrame, borderwidth=2, relief='solid')
+    #             label = ttk.Label(frameDay, width=10, text=str(date.day), font='Helvetica 12 bold',
+    #                               padding=(5, 0, 5, 0), background=self.__gui.configTema['bgDiaMes'])
+    #             label.grid(padx=2, pady=2)
+    #             diaFormat = date.strftime('%Y-%m-%d')
+    #             eventosDelDia = EventoDao.seleccionar_fecha(fecha=diaFormat)
+    #             if eventosDelDia:
+    #                 self.__crearTablaTreeView(frameDay, eventosDelDia, height)
+    #             else:
+    #                 ttk.Label(frameDay, text='SIN\nEVENTOS', font='Helvetica 7', justify='center', width=10, padding=pad,
+    #                           background=self.__gui.configTema['bgSinEventos']).grid()
+    #             frameDay.grid(row=self.__mes.index(week) + 1, column=c, padx=2, pady=2)
+    #             if date.month != mes:
+    #                 label['background'] = self.__gui.configTema['bgNoDiaMes']
+    #             if c == 6:
+    #                 label['foreground'] = 'blue'
+    #             if c == 0:
+    #                 label['foreground'] = 'red'
+    #             if date == self.__fechaActualDT.date():
+    #                 label['background'] = self.__gui.configTema['bgHoy']
+    #             labels_row.append(label)
+    #         self.labels.append(labels_row)
+    #     return monthFrame
 
-    def __crearTablaTreeView(self, frame, datos, altura):
+    def __show_month(self, month_widget, height):
+        self.__listaTablas = []
+        diaFormat = self.__fechaActualDT.strftime('%Y-%m')
+        eventos_del_mes = EventoDao.seleccionar_fecha(fecha=diaFormat)
+        dias_con_eventos = {}
+        if eventos_del_mes:
+            for ev in eventos_del_mes:
+                dias_con_eventos[ev.fecha_hora.strftime('%d')] = ev
+        month_days = []
+        for week in self.__mes:
+            for day in week:
+                month_days.append(day)
+        for header, body, frame in zip(month_widget.days_header_list, month_widget.days_content_list, month_widget.days_frame_list):
+            date = month_days.pop(0)
+            header.config(text=str(date.day))
+            if date.month != self.__mesActual:
+                frame.config(style='NoDayFrame.TFrame')
+                header['background'] = self.__gui.configTema['bgNoDiaMes']
+            if date == self.__fechaActualDT.date():
+                header['background'] = self.__gui.configTema['bgHoy']
+            eventos_del_dia = dias_con_eventos.get(str(date.day))
+            if eventos_del_dia:
+                body.grid_remove()
+                self.__crearTablaTreeView(frame, [eventos_del_dia])
+        month_widget.grid()
+
+
+    def __crearTablaTreeView(self, frame, datos):
         """Crea una tabla tk.TreeView en la que se muestran cada uno de los eventos correspondientes."""
-        tablaTreeView = ttk.Treeview(frame, columns=('id', 'ev'), show='', selectmode="extended", height=altura,
-                                     padding=5)
+        tablaTreeView = ttk.Treeview(frame, columns=('id', 'ev'), show='', selectmode="extended", height=3,
+                                     padding=0, )
         tablaTreeView["displaycolumns"] = 'ev'
-        tablaTreeView.column('ev', width=95, anchor=tk.W)
+        tablaTreeView.column('ev', width=95,anchor=tk.W)
         tablaTreeView.heading('ev', text="Eventos", anchor=tk.CENTER)
-        tablaTreeView.grid(column=0, row=1)
+        #frame.config(width=10, height=100)
+        #tablaTreeView.grid()
+        tablaTreeView.grid(padx=1, pady=1, sticky='nsew')
         tablaTreeView.bind("<ButtonPress-1>", self.__onClickCell)
         tablaTreeView.bind("<Double-Button-1>", self.__doubleOnClickCell)
         for row in datos:
@@ -154,7 +249,7 @@ class VistaMensual(ttk.Frame):
         self.__mes = self.__cal.matrizMensual(self.__anioActual, self.__mesActual)
         self.__lblNombreMes['text'] = self.__cal.nombreDelMes(self.__mesActual, 1) + ' - ' + str(self.__anioActual)
         self.__mesFrame = ttk.Frame(self, padding=5, borderwidth=2, relief="groove")
-        self.__mostrarMes(self.__mesFrame, self.__mesActual).grid()
+        #self.__mostrarMes(self.__mesFrame, self.__mesActual).grid()
         self.__mesFrame.grid(column=0, row=1, columnspan=3, pady=5, padx=5)
 
     def __siguiente(self):
@@ -168,5 +263,15 @@ class VistaMensual(ttk.Frame):
         self.__mes = self.__cal.matrizMensual(self.__anioActual, self.__mesActual)
         self.__lblNombreMes['text'] = self.__cal.nombreDelMes(self.__mesActual, 1) + ' - ' + str(self.__anioActual)
         self.__mesFrame = ttk.Frame(self, padding=5, borderwidth=2, relief="groove")
-        self.__mostrarMes(self.__mesFrame, self.__mesActual).grid()
+        #self.__mostrarMes(self.__mesFrame, self.__mesActual).grid()
         self.__mesFrame.grid(column=0, row=1, columnspan=3, pady=5, padx=5)
+
+if __name__ == '__main__':
+
+        class Gui:
+            configTema = config.awdark
+
+        root = tk.Tk()
+        VistaMensual(root, Gui()).grid()
+        root.eval('tk::PlaceWindow . center')
+        root.mainloop()
