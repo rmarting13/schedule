@@ -4,7 +4,6 @@ from tkinter import ttk, END, messagebox
 from datetime import datetime
 from calendar import Calendar
 from tkcalendar import Calendar as tkCalendar
-from Archivo import BaseDeDatos
 
 class Calendario(Calendar):
     """Clase que representa un calendario."""

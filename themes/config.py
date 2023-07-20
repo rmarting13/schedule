@@ -1,7 +1,7 @@
 awdark = {'bgNombreDia': '#000',
           'bgSinEventos': '#555a57',
           'bgDiaMes': '#58278c',
-          'bgHoy': '#6c33e1',
+          'bgHoy': '#be1515',
           'bgNoDiaMes': '#424242',
           'bgLabelText': '#242421',
           'bgLabelNormal': '#595953',

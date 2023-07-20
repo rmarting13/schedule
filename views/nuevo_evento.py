@@ -2,17 +2,13 @@ import tkinter as tk
 from PIL import ImageTk, Image
 from tkinter import ttk, END, messagebox
 from datetime import datetime
-from calendar import Calendar
 from tkcalendar import Calendar as tkCalendar
-
 from db_context.etiqueta_dao import EtiquetaDao
 from db_context.evento_dao import EventoDao
 from db_context.eventos_etiquetas_dao import EventoEtiquetaDao
 from db_context.importancia_dao import ImportanciaDao
 from models.etiqueta import Etiqueta
 from models.evento import Evento
-from views.popup import PopUp
-
 
 class NuevoEventoVista(ttk.Frame):
     """Clase que representa gráficamente la interfaz de creación/modificación de un evento de calendario."""
@@ -20,9 +16,9 @@ class NuevoEventoVista(ttk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent, padding=20)
         self.__controller = controller
-        self.grid(column=0, row=1, sticky=(tk.N, tk.S, tk.E, tk.W))
         parent.columnconfigure(0, weight=1)
         parent.rowconfigure(1, weight=1)
+        self.__parent = parent
         self.__ventanaCal = None
         self.__tamTag = 0
         self.__rowTag = 0
@@ -64,6 +60,9 @@ class NuevoEventoVista(ttk.Frame):
 
         self.__etiqueta.trace("w", lambda name, index, mode: self.__activarBtnEtiqueta())
         self.__cargarComponentes()
+        if self.__controller.selectID:
+            self.grid(column=0, row=0, sticky='nsew')
+
 
     def __cargarComponentes(self):
         """Muestra en un frame, los widgets correspondientes a cada campo de los datos de un evento, disponibles para ser
@@ -82,7 +81,7 @@ class NuevoEventoVista(ttk.Frame):
         self.__block3.rowconfigure(0, weight=1)
 
         # TITULO
-        ttk.Label(
+        self.__title_label = ttk.Label(
             self.__block1,
             font=('Ubuntu', '12', 'bold'),
             text="Título: ",
@@ -90,7 +89,8 @@ class NuevoEventoVista(ttk.Frame):
             justify='center',
             width=5,
             padding= (5,0,0,0)
-        ).grid(column=0, row=0, sticky='nsew', pady=5)
+        )
+        self.__title_label.grid(column=0, row=0, sticky='nsew', pady=5)
         vcmd_title = (self.__block1.register(self.__validate_title), '%P')
         ivcmd_title = (self.__block1.register(self.__on_invalid_title),)
         self.__inputTit = ttk.Entry(self.__block1,
@@ -103,11 +103,15 @@ class NuevoEventoVista(ttk.Frame):
         self.label_error_title.grid(row=1, column=1, columnspan=1,sticky='nsew', padx=5)
 
         # DESCRIPCIÓN
-        ttk.Label(self.__block1, font=('Ubuntu', '12', 'bold'), background=self.__controller.configTema['bgLabelTextNewEvent'], padding=(5, 0, 0, 0), width=5, text="Descripción:", justify='left').grid(column=0,
-                                                                                                                                                                                                         row=2,
-                                                                                                                                                                                                         columnspan=2,
-                                                                                                                                                                                                         sticky='nsew',
-                                                                                                                                                                                                         pady=5, padx=1)
+        self.__content_label = ttk.Label(self.__block1, font=('Ubuntu', '12', 'bold'),
+                                         background=self.__controller.configTema['bgLabelTextNewEvent'],
+                                         padding=(5, 0, 0, 0), width=5, text="Descripción:",
+                                         justify='left')
+        self.__content_label.grid(column=0,
+                                    row=2,
+                                    columnspan=2,
+                                    sticky='nsew',
+                                    pady=5, padx=1)
         self.__inputDesc = tk.Text(self.__block1, font=('Ubuntu', '11'), height=10, width=10,
                                    background=self.__controller.configTema['bgLabelText'],
                                    foreground=self.__controller.configTema['fgText'])
@@ -115,10 +119,14 @@ class NuevoEventoVista(ttk.Frame):
         self.__inputDesc.grid(column=0, row=3, columnspan=2, sticky='nsew', pady=5, padx=1)
 
         # IMPORTANCIA
-        ttk.Label(self.__block1, font=('Ubuntu', '12', 'bold'), width=15, padding=(5,0,0,0), background=self.__controller.configTema['bgLabelTextNewEvent'], text="Importancia:", justify='left').grid(column=0,
-                                                                                                                                                                                                       row=4,
-                                                                                                                                                                                                       sticky='nsew',
-                                                                                                                                                                                                       pady=5, padx=1)
+        self.__import_label = ttk.Label(self.__block1, font=('Ubuntu', '12', 'bold'),
+                                        width=15, padding=(5,0,0,0),
+                                        background=self.__controller.configTema['bgLabelTextNewEvent'],
+                                        text="Importancia:", justify='left')
+        self.__import_label.grid(column=0,
+                                   row=4,
+                                   sticky='nsew',
+                                   pady=5, padx=1)
 
         self.__inputImp = ttk.Combobox(self.__block1, width=15, textvariable=self.__importancia, font=('Ubuntu', '11', 'bold'),
                                        values=self.__importancia_options, justify='center')
@@ -142,8 +150,6 @@ class NuevoEventoVista(ttk.Frame):
         self.__lblTagsRest = ttk.Label(self.__block1, text='5', font=('Ubuntu', '12', 'bold'),
                                        foreground=self.__controller.configTema['Tags'], padding=5)
         self.__lblTagsRest.grid(column=1, row=6, columnspan=1, sticky='nsew')
-        # self.__inputTag = ttk.Entry(self.__block1, font=('Ubuntu', '11'), width=35, textvariable=self.__etiqueta,
-        #                             justify='right')
 
         self.__tagFrame = ttk.Labelframe(self.__block1, text="Tags", borderwidth=6, relief='sunken')
         self.__tagFrame.grid(column=0, row=7, columnspan=2, sticky='nsew', padx=1, pady=5)
@@ -224,14 +230,14 @@ class NuevoEventoVista(ttk.Frame):
 
         # AGREGAR RECORDATORIO
         self.__lblFrameRecor = ttk.LabelFrame(self.__block2, text='Recordatorio', relief='flat', width=10)
-        canvas = tk.Canvas(self.__lblFrameRecor, width=40, height=40,
+        self.__canvas = tk.Canvas(self.__lblFrameRecor, width=40, height=40,
                            highlightbackground=self.__controller.configTema['hlbgCanvas'])
-        canvas.grid(column=0, row=0, sticky='nsew', pady=1)
+        self.__canvas.grid(column=0, row=0, sticky='nsew', pady=1)
         img = (Image.open(self.__controller.configTema['imagen']))
         resized_image = img.resize((40, 40), Image.LANCZOS)
         new_image = ImageTk.PhotoImage(resized_image)
-        canvas.create_image(2, 2, anchor=tk.NW, image=new_image)
-        canvas.image = new_image
+        self.__canvas.create_image(2, 2, anchor=tk.NW, image=new_image)
+        self.__canvas.image = new_image
         self.__recorChBx = ttk.Checkbutton(self.__lblFrameRecor, command=self.__agregarRecor,
                                            variable=self.__checkValue)
         self.__recorChBx.grid(column=1, row=0, sticky='nsew', pady=5, padx=(5, 0))
@@ -240,8 +246,6 @@ class NuevoEventoVista(ttk.Frame):
 
         # BOTONES ACEPTAR Y CANCELAR
 
-        # s = ttk.Style()
-        # s.configure('Frame1.TFrame', background='red')
         btnFrame = ttk.Frame(self.__block3)
         self.__btnAceptar = ttk.Button(btnFrame, style='btnAceptar.TButton', text="Aceptar",
                                        command=self.__enviarEvento, state='disabled')
@@ -249,13 +253,10 @@ class NuevoEventoVista(ttk.Frame):
         btnCancelar = ttk.Button(btnFrame, style='btnCancelar.TButton', text="Cancelar", command=self.__limpiarCampos)
         btnCancelar.grid(column=1, row=0, padx=(3, 0))
         btnFrame.grid(column=1, row=0, pady=5, sticky='nsew')
-        #self.__titulo.trace("w", lambda name, index, mode: self.__activarBtnAceptar())
         if self.__titulo.get() != '':
             self.__btnAceptar['state'] = 'enabled'
 
         self.__block1.grid(column=0, row=0, rowspan=2, sticky='nsew')
-        #separator = ttk.Separator(self, orient='vertical', )
-        #separator.grid(column=1, row=0, rowspan=2, padx=5, sticky=tk.EW)
         self.__block2.grid(column=1, row=1, sticky='nsew')
         self.__block3.grid(column=0, row=2, columnspan=2, sticky='nsew')
         self.__mainBlock.grid(column=0, row=0, sticky='nsew')
@@ -304,7 +305,7 @@ class NuevoEventoVista(ttk.Frame):
         self.__inputTit['foreground'] = color if color else self.__controller.configTema['fgText']
 
     def __on_invalid_duration(self, p):
-        if  p == "":
+        if p == "":
             self.__show_message_duration('Este campo es obligatorio', 'red')
         else:
             self.__show_message_duration('El valor debe ser numérico', 'red')
@@ -322,12 +323,6 @@ class NuevoEventoVista(ttk.Frame):
         los widgets relacionados a la fecha y hora del recordatorio para ser configurados por el usuario."""
         if self.__checkValue.get() == '1':
             # FECHA
-            # ttk.Label(self.__inputRecor, font=('Ubuntu', '12', 'bold'), text="Fecha:", justify='left').grid(column=0,
-            #                                                                                                 row=0,
-            #                                                                                                 columnspan=1,
-            #                                                                                                 sticky='nsew',
-            #                                                                                                 pady=5,
-            #                                                                                                 padx=2)
             self.__inputFechaRecor = ttk.Entry(self.__inputRecor, font=('Ubuntu', '11', 'bold'),
                                                textvariable=self.__fechaRecor, state='readonly')
             self.__inputFechaRecor.config(justify='center', width=10)
@@ -335,12 +330,6 @@ class NuevoEventoVista(ttk.Frame):
             self.__inputFechaRecor.grid(column=0, row=0, columnspan=1, sticky='nsew', pady=5)
             self.__inputFechaRecor.bind("<ButtonPress-1>", self.__seleccionarFechaRecor)
             # HORA
-            # ttk.Label(self.__inputRecor, font=('Ubuntu', '12', 'bold'), text="Hora:", justify="left").grid(column=0,
-            #                                                                                                row=1,
-            #                                                                                                columnspan=1,
-            #                                                                                                sticky='nsew',
-            #                                                                                                pady=5,
-            #                                                                                                padx=2)
             self.__inputHoraRecor = ttk.Frame(self.__inputRecor)
             comboRecorHora = ttk.Combobox(self.__inputHoraRecor, font=('Ubuntu', '11', 'bold'),
                                           textvariable=self.__hRecor, values=self.__horas, width=3, state='readonly',
@@ -360,20 +349,18 @@ class NuevoEventoVista(ttk.Frame):
             self.__inputHoraRecor.grid(column=0, row=1, sticky='nsew', pady=0)
             self.__inputRecor.grid(column=1, row=4, sticky='nsew', pady=0)
         else:
-            # self.__cerrarCal()
             self.__inputRecor.destroy()
             self.__inputRecor = ttk.Labelframe(self.__block2, text="Configurar")
+
 
     def __seleccionarFechaRecor(self, event):
         """Es llamado al hacer click en el campo fecha de la interfaz, desplegando un pequeño calendario gráfico que
         permite elegir una determinada fecha para el evento."""
-        #if self.__ventanaCal == None:
         self.__desplegarCalendarioSeleccionable(self.__obtenerFechaRecor)
 
     def __seleccionarFechaEvento(self, event):
         """Es llamado al hacer click en el campo fecha del frame Recordatorio , desplegando un pequeño calendario gráfico que
        permite elegir una determinada fecha para el recordatorio."""
-        #if self.__ventanaCal == None:
         self.__desplegarCalendarioSeleccionable(self.__obtenerFechaEvento)
 
     def __desplegarCalendarioSeleccionable(self, tipo):
@@ -381,22 +368,9 @@ class NuevoEventoVista(ttk.Frame):
         self.__btnSel.config(command=tipo)
         self.__calFrame.grid(row=0, column=1, sticky='e')
 
-    # def __desplegarCalendarioSeleccionable(self, tipo):
-    #     """Genera gráficamente la interfaz de un calendario que permite explorar y seleccionar fechas."""
-    #     self.__ventanaCal = tkCalendar(self.__mainBlock, selectmode="day", date_pattern="y-mm-dd")
-    #     self.__ventanaCal.grid(column=3, row=0, columnspan=2, padx=5, pady=5, sticky=tk.S)
-    #     self.__btnSel = ttk.Button(self.__mainBlock, text="Seleccionar", command=tipo)
-    #     self.__btnSel.grid(column=3, row=1, pady=5, padx=5, sticky=tk.NE)
-    #     self.__btnCan = ttk.Button(self.__mainBlock, text="Cerrar", command=self.__cerrarCal)
-    #     self.__btnCan.grid(column=4, row=1, pady=5, padx=5, sticky=tk.NW)
-
     def __cerrarCal(self):
         """Destruye el frame donde se generó el calendario para selección de fechas."""
-        #self.__calFrame.destroy()
-        #self.__btnSel.destroy()
-        #self.__btnCan.destroy()
         self.__calFrame.grid_remove()
-        #self.__ventanaCal = None
 
     def __obtenerFechaRecor(self):
         """Es llamado al presionar el botón "Seleccionar" del frame del calendario de selección de fechas, obteniendo
@@ -422,7 +396,6 @@ class NuevoEventoVista(ttk.Frame):
         fecha = self.__fecha.get()
         hora = self.__hHora.get() + ':' + self.__mHora.get()+':00'
         if self.__validarFechaYHora(fecha, hora):
-            #tags = ", ".join(self.__listaEtiquetas)
             if self.__checkValue.get() == '1':
                 stringRecor = self.__fechaRecor.get()+' '+self.__hRecor.get()+':'+self.__mRecor.get()+':00'
             else:
@@ -444,7 +417,6 @@ class NuevoEventoVista(ttk.Frame):
                 id_evento = self.__id
                 EventoDao.actualizar(evento)
                 tags_on_db = sorted(list(map(lambda x: x[1], EventoEtiquetaDao.seleccionar(id_evento))))
-                # relaciones_actuales = list(map(lambda x: (id_evento, x[0]), self.__listaEtiquetas))
                 old_tags_to_compare = sorted(list(map(lambda x: x[0], old_tags)))
                 if old_tags_to_compare != tags_on_db:  # pregunta si se eliminaron etiquetas al actualizar
                     delete_tags = list(filter(lambda tg: tg not in old_tags_to_compare, tags_on_db))
@@ -463,9 +435,10 @@ class NuevoEventoVista(ttk.Frame):
                     EventoEtiquetaDao.insertar(id_evento=id_evento, id_etiqueta=id_tag)  # nuevas relaciones en la tabla eventos_etiquetas
 
             if self.__id:
-                PopUp(self).mensaje('Evento actualizado con éxito!')
+                messagebox.showinfo(title="Aviso", message="Evento actualizado con éxito!")
+                self.__parent.destroy()
             else:
-                PopUp(self).mensaje('Evento agregado con éxito!')
+                messagebox.showinfo(title="Aviso", message="Evento agregado con éxito!")
                 self.__limpiarCampos()
             self.__controller.actualizar()
 
@@ -485,7 +458,7 @@ class NuevoEventoVista(ttk.Frame):
             value = fecha+' '+hora
             if EventoDao.eixiste_fecha_hora(fecha_hora=value):
                 rdo = False
-                PopUp(self).mensaje('Ya existe un evento en la misma fecha y hora.\nPor favor elija otra fecha/hora.')
+                messagebox.showerror(title="Error", message="'Ya existe un evento en la misma fecha y hora.\nPor favor elija otra fecha/hora.'")
             else:
                 rdo = True
         else:
@@ -495,26 +468,29 @@ class NuevoEventoVista(ttk.Frame):
     def __limpiarCampos(self):
         """Elimina el contenido de los widgets de la interfaz que haya completado el usuario o hayan sido autocompletados
         por modificación de un evento."""
-        self.__titulo.set('')
-        self.__descripcion = ''
-        self.__importancia.set(self.__importancia_options[0] if self.__importancia_options else '')
-        self.__fecha.set(datetime.today().strftime('%Y-%m-%d'))
-        self.__hHora.set(datetime.now().strftime('%H'))
-        self.__mHora.set(datetime.now().strftime('%M'))
-        self.__duracion.set('30')
-        self.__fechaRecor.set(datetime.today().strftime('%Y-%m-%d'))
-        if self.__inputDesc != None:
-            self.__inputDesc.delete("1.0", "end-1c")
-        if self.__checkValue.get() == '1':
-            self.__recorChBx.invoke()
-        if self.__ventanaCal != None:
-            self.__cerrarCal()
-        if self.__tagFrame != None:
-            self.__tagFrame.destroy()
-            self.__lblTagsRest['text'] = '5'
-            self.__tagFrame = ttk.Labelframe(self.__block1, text="Tags", borderwidth=6, relief='sunken')
-            self.__tagFrame.grid(column=0, row=7, columnspan=2, sticky='nsew')
-        self.__listaEtiquetas.clear()
+        if self.__controller.selectID:
+            self.__parent.destroy()
+        else:
+            self.__titulo.set('')
+            self.__descripcion = ''
+            self.__importancia.set(self.__importancia_options[0] if self.__importancia_options else '')
+            self.__fecha.set(datetime.today().strftime('%Y-%m-%d'))
+            self.__hHora.set(datetime.now().strftime('%H'))
+            self.__mHora.set(datetime.now().strftime('%M'))
+            self.__duracion.set('30')
+            self.__fechaRecor.set(datetime.today().strftime('%Y-%m-%d'))
+            if self.__inputDesc != None:
+                self.__inputDesc.delete("1.0", "end-1c")
+            if self.__checkValue.get() == '1':
+                self.__recorChBx.invoke()
+            if self.__ventanaCal != None:
+                self.__cerrarCal()
+            if self.__tagFrame != None:
+                self.__tagFrame.destroy()
+                self.__lblTagsRest['text'] = '5'
+                self.__tagFrame = ttk.Labelframe(self.__block1, text="Tags", borderwidth=6, relief='sunken')
+                self.__tagFrame.grid(column=0, row=7, columnspan=2, sticky='nsew')
+            self.__listaEtiquetas.clear()
 
     def __activarBtnEtiqueta(self):
         """Habilita o deshabilita el estado del botón Agregar Etiqueta, de acuerdo al seguimiento de la traza
@@ -527,7 +503,6 @@ class NuevoEventoVista(ttk.Frame):
     def __agregarEtiqueta(self):
         """Es llamado al presionar el botón "Agregar Etiqueta", recogiendo el string del campo de entrada de etiqueta
         agregándolo a una lista de etiquetas del evento y a su vez mostrando gráficamente en la interfaz, las etiquetas agregadas."""
-        #deleteTag = lambda tag: self.__listaEtiquetas.remove(tag)
 
         def deleteTag(tag):
             for tuple in self.__listaEtiquetas:
@@ -575,3 +550,16 @@ class NuevoEventoVista(ttk.Frame):
             if len(self.__tagFrame.winfo_children()) >= 5:  # Deshabilita el botón si se llegó al máximo de 5 etiquetas
                 self.__btnAddTag.state(['disabled'])
         self.__inputTag.delete(0, END)
+
+    def set_theme(self):
+        self.__title_label.config(background=self.__controller.configTema['bgLabelTextNewEvent'])
+        self.__content_label.config(background=self.__controller.configTema['bgLabelTextNewEvent'])
+        self.__inputDesc.config(background=self.__controller.configTema['bgLabelText'])
+        self.__inputDesc.config(foreground=self.__controller.configTema['fgText'])
+        self.__import_label.config(background=self.__controller.configTema['bgLabelTextNewEvent'])
+        self.__canvas.config(highlightbackground=self.__controller.configTema['hlbgCanvas'])
+        img = (Image.open(self.__controller.configTema['imagen']))
+        resized_image = img.resize((40, 40), Image.LANCZOS)
+        new_image = ImageTk.PhotoImage(resized_image)
+        self.__canvas.create_image(2, 2, anchor=tk.NW, image=new_image)
+        self.__canvas.image = new_image
