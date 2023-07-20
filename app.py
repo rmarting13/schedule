@@ -1,5 +1,8 @@
+from tkinter import ttk
 from views import controller, login
 import tkinter as tk
+
+from views.app import App
 
 try:
     root = tk.Tk()
@@ -7,13 +10,14 @@ try:
     login.Login(root, state).grid()
     root.eval('tk::PlaceWindow . center')
     root.mainloop()
+
     if state:
         root = tk.Tk()
         root.tk.call("lappend", "auto_path", "themes")
         root.tk.call('package', 'require', 'awdark')
         root.tk.call('package', 'require', 'awlight')
-        controller.App(root).grid()
+        controller.App(root)
         root.eval('tk::PlaceWindow . center')
-        root.mainloop()
+    root.mainloop()
 except Exception as err:
     print(err)

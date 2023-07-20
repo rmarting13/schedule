@@ -1,10 +1,12 @@
 import sys
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, ttk
 from PIL import ImageTk, Image
 
 from mysql.connector import Error, errorcode
 from db_context.mysql_connection import Connection as Con
+from views import controller
+
 
 class Login(tk.Frame):
     def __init__(self, parent, state):
@@ -12,7 +14,7 @@ class Login(tk.Frame):
         self.parent = parent
         self.state = state
         self.parent.title("Login")
-        # self.grid(row=0, column=0, sticky='nsew', padx=0, pady=0)
+        self.grid(row=0, column=0, sticky='n')
         self.parent.columnconfigure(0, weight=1)
         self.parent.rowconfigure(0, weight=1)
         self.parent.resizable(False, False)
@@ -26,8 +28,8 @@ class Login(tk.Frame):
 
         self.icon_label = tk.Frame(self.frame, background='#8151cf')
         canvas = tk.Canvas(self.icon_label, width=180, height=150, background='#8151cf',highlightbackground='#8151cf')
-        canvas.grid(column=0, row=0, sticky='nsew', pady=1)
-        img = Image.open('/home/rmarting13/Documentos/schedule/themes/calendar.png')
+        canvas.grid(column=0, row=0, sticky='nsew', pady=30)
+        img = Image.open('./themes/calendar.png')
         resized_image = img.resize((180, 150), Image.LANCZOS)
         new_image = ImageTk.PhotoImage(resized_image)
         canvas.create_image(2, 2, anchor=tk.NW, image=new_image)
@@ -44,10 +46,9 @@ class Login(tk.Frame):
             self.frame, text="Constraseña:", bg='#8151cf', fg="#FFFFFF", font=("Ubuntu", 12))
         self.login_button = tk.Button(
             self.frame, text="Login", bg="#cc5800", fg="#FFFFFF", font=("Ubuntu", 12), command=self.login)
-
         # Placing widgets on the screen
-        self.icon_label.grid(row=0, column=0, columnspan=2, pady=5)
-        self.login_label.grid(row=1, column=0, columnspan=2, sticky="news", pady=5)
+        self.icon_label.grid(row=0, column=0, columnspan=2, pady=0)
+        self.login_label.grid(row=1, column=0, columnspan=2, sticky="news", pady=0)
         self.username_label.grid(row=2, column=0)
         self.username_entry.grid(row=2, column=1, pady=20)
         self.password_label.grid(row=3, column=0)
@@ -71,8 +72,12 @@ class Login(tk.Frame):
 
 
 if __name__ == '__main__':
+
     root = tk.Tk()
-    Login(root,[]).grid()
+    root.tk.call("lappend", "auto_path", "../themes")
+    root.tk.call('package', 'require', 'awdark')
+    root.tk.call('package', 'require', 'awlight')
+    Login(root,[])
     root.eval('tk::PlaceWindow . center')
     root.mainloop()
 

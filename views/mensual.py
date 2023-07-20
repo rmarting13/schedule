@@ -13,12 +13,13 @@ from views.evento import VistaEvento
 class MonthWidget(ttk.Frame):
     def __init__(self, parent, rows=None, controller=None):
         super().__init__(parent, style='WeekFrame.TFrame', padding=1)
-        self.grid(row=0, column=0, sticky='nsew')
+        #self.grid(row=0, column=0, sticky='nsew')
         parent.columnconfigure(0, weight=1)
         parent.rowconfigure(0, weight=1)
         self.controller = controller
         self.__cal = Calendario()
         self.rows = rows
+        self.column_headers = []
         self.days_header = []
         self.days_content = []
         self.days_events_tables = []
@@ -31,9 +32,10 @@ class MonthWidget(ttk.Frame):
             #monthFrame = ttk.Frame(frame, style='WeekFrame.TFrame', padding=5)
 
             for m in range(7):
-                labelDay = ttk.Label(self, width=13, text=self.__cal.nombreDelDia(m, 1), font='Helvetica 10 bold', foreground='white',
-                                     justify='center', background=self.controller.configTema['bgNombreDia'], borderwidth=2,
+                labelDay = ttk.Label(self, width=13, text=self.__cal.nombreDelDia(m, 1), font='Helvetica 10 bold', foreground=self.controller.configTema['fgText'],
+                                     justify='right', background=self.controller.configTema['bgNombreDia'], borderwidth=2,
                                      relief='solid')
+                self.column_headers.append(labelDay)
                 if labelDay['text'] == 'Domingo':
                     labelDay['foreground'] = 'red'
                 if labelDay['text'] == 'Sábado':
@@ -48,12 +50,12 @@ class MonthWidget(ttk.Frame):
                 for day in range(7):
                     frameDay = ttk.Frame(self,width=7,height=7, borderwidth=2, relief='solid', style='DayFrame.TFrame')
                     self.days_frame.append(frameDay)
-                    day_header_label = ttk.Label(frameDay, font='Helvetica 12 bold',
-                              background=self.controller.configTema['bgDiaMes'])
+                    day_header_label = ttk.Label(frameDay, width=7, font='Helvetica 12 bold',
+                              background=self.controller.configTema['bgDiaMes'], padding=(30,0,0,0))
                     if day == 6:
-                        day_header_label['foreground'] = 'blue'
+                        day_header_label['foreground'] = '#55aa00'
                     if day == 0:
-                        day_header_label['foreground'] = 'red'
+                        day_header_label['foreground'] = '#ff5500'
                     self.days_header.append(day_header_label)
                     day_header_label.grid(padx=0, pady=0)
                     day_content_label = ttk.Label(frameDay, text='SIN\nEVENTOS', font='Helvetica 8', justify='center',
@@ -78,7 +80,7 @@ class VistaMensual(ttk.Frame):
 
     def __init__(self, parent, gui=None):
         super().__init__(parent, padding=(0))
-        self.grid(row=0, column=0, sticky='nsew')
+        #self.grid(row=0, column=0, sticky='nsew')
         parent.columnconfigure(0, weight=1)
         parent.rowconfigure(0, weight=1)
         self.__gui = gui
@@ -114,8 +116,6 @@ class VistaMensual(ttk.Frame):
         self.__show_month(self.__current_month_widget, height=3)
         self.__mesFrame.grid(column=0, row=1, columnspan=3, pady=0, padx=0)
 
-
-
     def actualizar(self):
         """Vuelve a cargar los widgets de los días del mes y sus tablas con eventos actualizadas desde el archivo .csv"""
         #self.__mesFrame = ttk.Frame(self, padding=5)
@@ -125,67 +125,8 @@ class VistaMensual(ttk.Frame):
             self.__show_month(self.__five_row_month, height=3)
         self.__mesFrame.grid(column=0, row=1, columnspan=3, pady=0, padx=0)
 
-
-    # def __mostrarMes(self, frame, mes):
-    #     """Genera y retorna un frame que contiene cada uno de los widgets que representan los días del mes, incluyendo
-    #     sus respectivas tablas con eventos."""
-    #     self.__listaTablas = []
-    #     fechasConEventos = self.__db.mapearFechas()
-    #     monthFrame = ttk.Frame(frame, style='WeekFrame.TFrame', padding=5)
-    #     self.labels = []
-    #     dias = []
-    #     for m in range(7):
-    #         labelDay = ttk.Label(monthFrame, width=9, text=self.__cal.nombreDelDia(m, 1), font='Helvetica 12 bold',
-    #                              padding=(18, 0, 5, 0), background=self.__gui.configTema['bgNombreDia'], borderwidth=2,
-    #                              relief='solid')
-    #         if labelDay['text'] == 'Domingo':
-    #             labelDay['foreground'] = 'red'
-    #         if labelDay['text'] == 'Sábado':
-    #             labelDay['foreground'] = 'blue'
-    #         labelDay.grid(column=m, row=0, padx=2, pady=2)
-    #         dias.append(labelDay)
-    #     self.labels.append(dias)
-    #     if len(self.__mes) == 6:
-    #         pad = (21, 18, 21, 18)
-    #         height = 2
-    #     else:
-    #         pad = (21, 28, 21, 28)
-    #         height = 3
-    #     for week in self.__mes:
-    #         labels_row = []
-    #         for c, date in enumerate(week):
-    #             frameDay = ttk.Frame(monthFrame, borderwidth=2, relief='solid')
-    #             label = ttk.Label(frameDay, width=10, text=str(date.day), font='Helvetica 12 bold',
-    #                               padding=(5, 0, 5, 0), background=self.__gui.configTema['bgDiaMes'])
-    #             label.grid(padx=2, pady=2)
-    #             diaFormat = date.strftime('%Y-%m-%d')
-    #             eventosDelDia = EventoDao.seleccionar_fecha(fecha=diaFormat)
-    #             if eventosDelDia:
-    #                 self.__crearTablaTreeView(frameDay, eventosDelDia, height)
-    #             else:
-    #                 ttk.Label(frameDay, text='SIN\nEVENTOS', font='Helvetica 7', justify='center', width=10, padding=pad,
-    #                           background=self.__gui.configTema['bgSinEventos']).grid()
-    #             frameDay.grid(row=self.__mes.index(week) + 1, column=c, padx=2, pady=2)
-    #             if date.month != mes:
-    #                 label['background'] = self.__gui.configTema['bgNoDiaMes']
-    #             if c == 6:
-    #                 label['foreground'] = 'blue'
-    #             if c == 0:
-    #                 label['foreground'] = 'red'
-    #             if date == self.__fechaActualDT.date():
-    #                 label['background'] = self.__gui.configTema['bgHoy']
-    #             labels_row.append(label)
-    #         self.labels.append(labels_row)
-    #     return monthFrame
-
     def __show_month(self, month_widget, height):
         self.__tablas_con_eventos = []
-        diaFormat = self.__fechaActualDT.strftime('%Y-%m')
-        eventos_del_mes = EventoDao.seleccionar_fecha(fecha=diaFormat)
-        dias_con_eventos = {}
-        if eventos_del_mes:
-            for ev in eventos_del_mes:
-                dias_con_eventos[ev.fecha_hora.strftime('%d-%m')] = ev
         month_days = []
         for week in self.__mes:
             for day in week:
@@ -196,17 +137,21 @@ class VistaMensual(ttk.Frame):
                       month_widget.days_frame)
         for header, body, table, frame in widgets:
             date = month_days.pop(0)
-            header.config(text=str(date.day))
+            header.config(text=f'{date.day}-{date.month}')
             if date.month != self.__mesActual:
                 frame.config(style='NoDayFrame.TFrame')
                 header['background'] = self.__gui.configTema['bgNoDiaMes']
             if date == self.__fechaActualDT.date():
                 header['background'] = self.__gui.configTema['bgHoy']
-            eventos_del_dia = dias_con_eventos.get(date.strftime('%d-%m'))
+            #eventos_del_dia = dias_con_eventos.get(date.strftime('%d-%m'))
+            eventos_del_dia = EventoDao.seleccionar_fecha(fecha=date.strftime('%Y-%m-%d'))
+            #print(f'EVENTOS DEL DIA {date.strftime("%d-%m")} VISTA MENSUAL:')
             if eventos_del_dia:
+                #print('EVENTOS DEL DIA VISTA MENSUAL:')
+               #for evento in eventos_del_dia:
+                #print(eventos_del_dia.titulo)
                 body.grid_remove()
-                self.__insertarEventosEnTabla(table=table, datos=[eventos_del_dia])
-                table.grid(padx=1, pady=1, sticky='nsew')
+                self.__insertarEventosEnTabla(table=table, datos=eventos_del_dia)
             else:
                 table.grid_remove()
                 body.grid()
@@ -222,6 +167,7 @@ class VistaMensual(ttk.Frame):
         table.tag_configure(tagname='2', font='Helvetica 8 bold', background='red', foreground='white')
         table.bind("<ButtonPress-1>", self.__onClickCell)
         table.bind("<Double-Button-1>", self.__doubleOnClickCell)
+        table.grid(padx=1, pady=1, sticky='nsew')
         self.__tablas_con_eventos.append(table)
 
     def __onClickCell(self, event):
@@ -269,6 +215,7 @@ class VistaMensual(ttk.Frame):
         else:
             self.__current_month_widget = self.__five_row_month
         self.__show_month(self.__current_month_widget, height=3)
+        self.__change_colors(self.__current_month_widget)
         #self.__mesFrame.grid(column=0, row=1, columnspan=3, pady=0, padx=0)
         #self.__mesFrame.grid(column=0, row=1, columnspan=3, pady=5, padx=5)
 
@@ -290,8 +237,32 @@ class VistaMensual(ttk.Frame):
         else:
             self.__current_month_widget = self.__five_row_month
         self.__show_month(self.__current_month_widget, height=3)
+        self.__change_colors(self.__current_month_widget)
         #self.__mesFrame.grid(column=0, row=1, columnspan=3, pady=0, padx=0)
         #self.__mesFrame.grid(column=0, row=1, columnspan=3, pady=5, padx=5)
+
+    def set_theme(self):
+        self.__change_colors(self.__current_month_widget)
+        #self.__change_colors(self.__five_row_month)
+
+    def __change_colors(self, month_widget):
+        for col in month_widget.column_headers:
+            col.config(background=self.__gui.configTema['bgNombreDia'])
+            col.config(foreground=self.__gui.configTema['fgText'])
+
+        widgets = zip(month_widget.days_header, month_widget.days_content)
+        #print(f'Fecha actual {self.__fechaActualDT.strftime("%d-%-m")}')
+        for header, body in widgets:
+            if header['text'].split('-')[1] == str(self.__mesActual):
+                if header['text'] == self.__fechaActualDT.strftime('%d-%-m'):
+                    header.config(background=self.__gui.configTema['bgHoy'])
+                else:
+                    header.config(background=self.__gui.configTema['bgDiaMes'])
+            else:
+                header.config(background=self.__gui.configTema['bgNoDiaMes'])
+            header.config(foreground=self.__gui.configTema['fgText'])
+            body.config(background=self.__gui.configTema['bgSinEventos'])
+            body.config(foreground=self.__gui.configTema['fgText'])
 
 if __name__ == '__main__':
 
