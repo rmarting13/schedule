@@ -17,11 +17,10 @@ class WeekWidget(ttk.Frame):
         self.days_header = []
         self.days_content = []
         self.days_events_tables = []
-        self.days_frame = []
+        #self.days_frame = []
         self.__cargar_componentes()
 
     def __cargar_componentes(self):
-        #self.__weekFrame = ttk.Frame(self, style='WeekFrame.TFrame', padding=5)
         for dia in range(7):
             dayFrame = ttk.Frame(self, borderwidth=2, relief="solid")
             lblDia = ttk.Label(dayFrame, width=14,
@@ -37,7 +36,6 @@ class WeekWidget(ttk.Frame):
                           background=self.controller.configTema['bgSinEventos'])
             self.days_content.append(label_content)
             label_content.grid()
-            #self.__frameEventos.grid(column=0, row=1, pady=2, padx=2)
             tablaTreeView = ttk.Treeview(event_frame, columns=('id', 'ev'), show="headings", selectmode="extended", height=7,
                                          padding=0)
             tablaTreeView["displaycolumns"] = ('ev')

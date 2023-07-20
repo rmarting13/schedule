@@ -1,10 +1,6 @@
 import tkinter as tk
 from PIL import ImageTk, Image
-from tkinter import ttk, END, messagebox
-from datetime import datetime
-from calendar import Calendar
-from tkcalendar import Calendar as tkCalendar
-from Archivo import BaseDeDatos
+from tkinter import ttk
 from db_context.importancia_dao import ImportanciaDao
 from models.evento import Evento
 

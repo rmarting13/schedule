@@ -1,13 +1,7 @@
 import tkinter as tk
-from PIL import ImageTk, Image
 from tkinter import ttk, END, messagebox
-from datetime import datetime
-from calendar import Calendar
-from tkcalendar import Calendar as tkCalendar
-from Archivo import BaseDeDatos
 from db_context.evento_dao import EventoDao
 from views.evento import VistaEvento
-from views.popup import PopUp
 
 
 class FiltroDeEventos(ttk.Frame):
@@ -15,7 +9,6 @@ class FiltroDeEventos(ttk.Frame):
 
     def __init__(self, parent, gui):
         super().__init__(parent, padding=(5))
-        #self.grid(column=0, row=1, sticky=(tk.N, tk.S, tk.E, tk.W))
         parent.columnconfigure(0, weight=1)
         parent.rowconfigure(1, weight=1)
         self.__parent = gui
@@ -116,7 +109,6 @@ class FiltroDeEventos(ttk.Frame):
             if listaFiltrada:
                 self.__insertarElementos(listaFiltrada)
             else:
-                #PopUp.error('No se encontraron eventos relacionados con la búsqueda.')
                 messagebox.showerror(title='Error', message='No se encontraron eventos relacionados con la búsqueda.')
         else:
             self.__insertarElementos(EventoDao.seleccionar())

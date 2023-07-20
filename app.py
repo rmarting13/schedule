@@ -1,8 +1,5 @@
-from tkinter import ttk
 from views import controller, login
 import tkinter as tk
-
-from views.app import App
 
 try:
     root = tk.Tk()

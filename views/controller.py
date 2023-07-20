@@ -1,13 +1,9 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from PIL import ImageTk, Image
-from datetime import datetime
-from Archivo import BaseDeDatos
 from db_context.evento_dao import EventoDao
 from views.busqueda import FiltroDeEventos
 from views.mensual import VistaMensual
 from views.nuevo_evento import NuevoEventoVista
-from views.popup import PopUp
 from views.semanal import VistaSemanal
 from themes import config
 
@@ -24,7 +20,6 @@ class App(ttk.Frame):
         self.parent = parent
         self.parent.configure(bg=self.configTema['mainBg'])
         self.nombreTema = tk.StringVar()
-        self.__primerInicio = True
         self.selectID = None
         self.frameTemas = ttk.LabelFrame(self, text='Temas', padding=5)
         radBtn = ttk.Radiobutton(self.frameTemas, text="Oscuro", value="awdark", padding=5, variable=self.nombreTema,
@@ -47,15 +42,10 @@ class App(ttk.Frame):
         ttk.Label(self.__lblReferencia, text='IMPORTANTE', font='Helvetica 8 bold',
                   background='#7d0c0c', foreground='white', borderwidth=5, relief='solid', width=12).grid(column=0, row=0,
                                                                                                       pady=2, padx=2)
-        ttk.Label(self.__lblReferencia, text='NORMAL', font='Helvetica 8 bold',
-                  background=self.configTema['bgLabelNormal'], borderwidth=5, relief='solid', width=12).grid(column=0,
-                                                                                                             row=1,
-                                                                                                             pady=2,
-                                                                                                             padx=2)
+        self.__lbl_normal = ttk.Label(self.__lblReferencia, text='NORMAL', font='Helvetica 8 bold',
+                  background=self.configTema['bgLabelNormal'], borderwidth=5, relief='solid', width=12)
+        self.__lbl_normal.grid(column=0, row=1, pady=2, padx=2)
         self.__lblReferencia.grid(column=0, row=2, columnspan=1, sticky=tk.N)
-        # self.__rightFrame = ttk.Frame(self, padding=5, borderwidth=2, relief="groove")
-        # self.__cargarVistaSemanal()
-        # self.__rightFrame.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
 
         #VISTA SEMANAL
         self.__view_frame = ttk.Frame(self, padding=0, borderwidth=2, relief="groove")
@@ -66,27 +56,16 @@ class App(ttk.Frame):
         self.__view_frame.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
 
         # VISTA MENSUAL
-        #self.__view_frame = ttk.Frame(self, padding=0, borderwidth=2, relief="groove")
         self.__month_widget = VistaMensual(self.__view_frame, self)
-        #self.__month_frame.grid(column=1, row=0, rowspan=3, padx=0, pady=0)
 
         #NUEVO EVENTO
-        #self.__new_event_frame = ttk.Frame(self, padding=5, borderwidth=2, relief="groove")
-        #self.__title_label = ttk.Label(self.__view_frame, text='Nuevo Evento', font=('Century Gothic', '30')).grid(column=0, row=0, pady=10)
         self.__new_event_widget = NuevoEventoVista(self.__view_frame, controller=self)
-        #self.__new_event_frame.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
 
         #ACTUALIZAR EVENTO
-        #self.__update_event_frame = ttk.Frame(self, padding=5, borderwidth=2, relief="groove")
-        #self.__title_label = ttk.Label(self.__view_frame, text='Actualizar Evento', font=('Century Gothic', '30')).grid(column=0, row=0, pady=10)
         self.__update_widget = None
-        #self.__update_event_frame.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
 
         #BUSCAR EVENTO
-        #self.__search_event_frame = ttk.Frame(self, padding=5, borderwidth=2, relief="groove")
-        #self.__title_label = ttk.Label(self.__view_frame, text='Búsqueda', font=('Century Gothic', '30')).grid(column=0, row=0, pady=10)
         self.__search_widget = FiltroDeEventos(self.__view_frame, self)
-        #self.__search_event_frame.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
 
     def __cargarMenuLateral(self):
         """Muestra en el frame izquierdo, todos los botones corresponidentes a la interfaz del menú principal."""
@@ -114,18 +93,10 @@ class App(ttk.Frame):
     def __cargarVistaSemanal(self):
         """Mestra en el frame derecho, los widgets que representan una semana, incluyendo los días y la tabla
         con eventos de cada día."""
-        # self.__frameMen = None
-        # self.__frameFiltro = None
-        #self.__rightFrame.destroy()
-        # self.__rightFrame = ttk.Frame(self, padding=5, borderwidth=2, relief="groove")
-        # ttk.Label(self.__rightFrame, text='Vista Semanal', font=('Century Gothic', '30')).grid(column=0, row=0, pady=10)
-        # self.__frameSem = VistaSemanal(self.__rightFrame, self)
-        # self.__rightFrame.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
         self.__month_widget.grid_remove()
         self.__new_event_widget.grid_remove()
         self.__search_widget.grid_remove()
         self.__title_label.config(text='Vista Semanal')
-        #self.__week_widget.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
         self.__week_widget.grid(column=0, row=1)
         self.__btnVistaSem['state'] = 'disabled'
         self.__btnBuscar['state'] = 'enabled'
@@ -137,18 +108,11 @@ class App(ttk.Frame):
     def __cargarVistaMensual(self):
         """Mestra en el frame derecho, los widgets que representan un mes, incluyendo los días y la tabla
         con eventos de cada día."""
-        # self.__frameSem = None
-        # self.__frameFiltro = None
-        # self.__rightFrame.destroy()
-        # self.__rightFrame = ttk.Frame(self, padding=0, borderwidth=2, relief="groove")
-        # self.__frameMen = VistaMensual(self.__rightFrame, self)
-        # self.__rightFrame.grid(column=1, row=0, rowspan=3, padx=0, pady=0)
         self.__new_event_widget.grid_remove()
         self.__search_widget.grid_remove()
         self.__week_widget.grid_remove()
         self.__title_label.grid_remove()
         self.__view_frame.config(padding=5)
-        #self.__month_widget.grid(column=1, row=0, rowspan=3, padx=0, pady=0)
         self.__month_widget.grid(column=0, row=0, sticky='nsew')
         self.__btnVistaSem['state'] = 'enabled'
         self.__btnBuscar['state'] = 'enabled'
@@ -159,11 +123,6 @@ class App(ttk.Frame):
 
     def __nuevoEvento(self):
         """Muestra en el frame derecho, la interfaz del formulario que debe completar el usuario para crear un evento."""
-        # self.__rightFrame.destroy()
-        # self.__rightFrame = ttk.Frame(self, padding=5, borderwidth=2, relief="groove")
-        # ttk.Label(self.__rightFrame, text=txt, font=('Century Gothic', '30')).grid(column=0, row=0, pady=10)
-        # NuevoEventoVista(self.__rightFrame, self).grid()
-        # self.__rightFrame.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
         self.selectID = None
         self.__search_widget.grid_remove()
         self.__week_widget.grid_remove()
@@ -177,25 +136,16 @@ class App(ttk.Frame):
         self.__btnVistaMen['state'] = 'enabled'
         self.btnModif['state'] = 'disabled'
         self.btnElim['state'] = 'disabled'
-        #self.__new_event_widget.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
 
 
     def __buscar(self):
         """Muestra en el frame derecho, la interfaz de búsqueda y filtro."""
-        # self.__frameMen = None
-        # self.__frameSem = None
-        # self.__rightFrame.destroy()
-        # self.__rightFrame = ttk.Frame(self, padding=5, borderwidth=2, relief="groove")
-        # ttk.Label(self.__rightFrame, text='Búsqueda', font=('Century Gothic', '30')).grid(column=0, row=0, pady=10)
-        # self.__frameFiltro = FiltroDeEventos(self.__rightFrame, self)
-        # self.__rightFrame.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
         self.__week_widget.grid_remove()
         self.__month_widget.grid_remove()
         self.__new_event_widget.grid_remove()
         self.__title_label.config(text='Búsqueda')
         self.__title_label.grid()
         self.__search_widget.grid(column=0, row=1)
-        #self.__search_widget.grid(column=1, row=0, rowspan=3, padx=5, pady=5)
         self.__btnBuscar['state'] = 'disabled'
         self.__btnVistaMen['state'] = 'enabled'
         self.__btnVistaSem['state'] = 'enabled'
@@ -204,12 +154,6 @@ class App(ttk.Frame):
     def __modificar(self):
         """Es llamado al presionar el botón Modificar, y llama al método __crearEvento con los campos
         autocompletados por los datos del evento a modificar."""
-        #self.__week_widget.grid_remove()
-        #self.__month_widget.grid_remove()
-        #self.__new_event_widget.grid_remove()
-        #self.__search_widget.grid_remove()
-        #self.__update_widget = NuevoEventoVista(self.__view_frame, controller=self)
-        #self.__update_widget.grid(column=0, row=1)
         self.__btnNuevo['state'] = 'enabled'
         self.__btnVistaSem['state'] = 'enabled'
         self.__btnBuscar['state'] = 'enabled'
@@ -232,14 +176,7 @@ class App(ttk.Frame):
         la tabla de eventos de alguna vista (Mensual, Semanal, Búsqueda), luego actualiza la vista que se 
         encuentre activa en ese momento."""
         EventoDao.eliminar(id_evento=self.selectID)
-        #PopUp(self).mensaje('Evento eliminado con éxito!')
         messagebox.showinfo(title='Aviso', message='Evento eliminado con éxito!')
-        # if self.__frameFiltro != None:
-        #     self.__frameFiltro.actualizar()
-        # if self.__frameSem != None:
-        #     self.__frameSem.actualizar()
-        # if self.__frameMen != None:
-        #    self.__frameMen.actualizar()
         self.actualizar()
 
     def actualizar(self):
@@ -251,8 +188,8 @@ class App(ttk.Frame):
         """Cambia la configuración del tema elegido en la interfaz. Para que los cambios
         surtan efecto se volverán a cargar los widgets y frames de la interfaz."""
         s = ttk.Style()
-        if self.__primerInicio:
-            s.theme_use(self.nombreTema.get())
+        s.theme_use(self.nombreTema.get())
+        if self.nombreTema.get() == 'awdark':
             s.configure('lblName.TLabel', font=('Nueva Std Cond', '10', 'bold'))
             s.configure('WeekFrame.TFrame', background='#960000')
             s.configure('DayFrame.TFrame', background='#58278c')
@@ -264,52 +201,26 @@ class App(ttk.Frame):
                   background=[('!active', '#d40000'), ('pressed', '#d46300'), ('active', '#ff3d45')])
             s.map('btnSigAnt.TButton',
                   background=[('!active', '#6a20a2'), ('pressed', '#4a1572'), ('active', '#a046e5')])
-            self.__primerInicio = False
+            self.configTema = config.awdark
+            self.parent.configure(bg=self.configTema['mainBg'])
         else:
-            opt = PopUp(self).advertencia()
-            if opt == True:
-                s.theme_use(self.nombreTema.get())
-                if self.nombreTema.get() == 'awdark':
-                    s.configure('lblName.TLabel', font=('Nueva Std Cond', '10', 'bold'))
-                    s.configure('WeekFrame.TFrame', background='#960000')
-                    s.configure('DayFrame.TFrame', background='#58278c')
-                    s.configure('NoDayFrame.TFrame', background='#424242')
-                    s.configure('TButton', font=('Verdana', '8', 'bold'))
-                    s.map('btnAceptar.TButton',
-                          background=[('!active', '#0047cc'), ('pressed', '#03009d'), ('active', '#3b7fff')])
-                    s.map('btnCancelar.TButton',
-                          background=[('!active', '#d40000'), ('pressed', '#d46300'), ('active', '#ff3d45')])
-                    s.map('btnSigAnt.TButton',
-                          background=[('!active', '#6a20a2'), ('pressed', '#4a1572'), ('active', '#a046e5')])
-                    self.configTema = config.awdark
-                    self.parent.configure(bg=self.configTema['mainBg'])
-                else:
-                    s.configure('lblName.TLabel', font=('Nueva Std Cond', '10', 'bold'))
-                    s.configure('TButton', font=('Verdana', '8', 'bold'))
-                    s.configure('WeekFrame.TFrame', background='#185ceb')
-                    s.configure('DayFrame.TFrame', background=config.awlight['bgDiaMes'])
-                    s.configure('NoDayFrame.TFrame', background=config.awlight['bgNoDiaMes'])
-                    s.map('btnAceptar.TButton',
-                          background=[('!active', '#0ed145'), ('pressed', '#1f9d43'), ('active', '#2cfe67')])
-                    s.map('btnCancelar.TButton',
-                          background=[('!active', '#ff0000'), ('pressed', '#b40000'), ('active', '#ff5252')])
-                    s.map('btnSigAnt.TButton',
-                          background=[('!active', '#53a9f4'), ('pressed', '#0082f4'), ('active', '#88c2f5')])
-                    self.configTema = config.awlight
-                    self.parent.configure(bg=self.configTema['mainBg'])
-                # self.__week_frame.destroy()
-                # self.__month_frame.destroy()
-                # self.__new_event_frame.destroy()
-                # self.__update_event_frame.destroy()
-                # self.__search_event_frame.destroy()
-                #self.__search_event_frame.grid_remove()
-                #self.__week_frame.grid_remove()
-                #self.__view_frame.grid_remove()
-                #self.__new_event_frame.grid_remove()
-                #self.cargarComponentes()
-                self.__week_widget.set_theme()
-                self.__month_widget.set_theme()
-                self.__new_event_widget.set_theme()
+            s.configure('lblName.TLabel', font=('Nueva Std Cond', '10', 'bold'))
+            s.configure('TButton', font=('Verdana', '8', 'bold'))
+            s.configure('WeekFrame.TFrame', background='#185ceb')
+            s.configure('DayFrame.TFrame', background=config.awlight['bgDiaMes'])
+            s.configure('NoDayFrame.TFrame', background=config.awlight['bgNoDiaMes'])
+            s.map('btnAceptar.TButton',
+                  background=[('!active', '#0ed145'), ('pressed', '#1f9d43'), ('active', '#2cfe67')])
+            s.map('btnCancelar.TButton',
+                  background=[('!active', '#ff0000'), ('pressed', '#b40000'), ('active', '#ff5252')])
+            s.map('btnSigAnt.TButton',
+                  background=[('!active', '#53a9f4'), ('pressed', '#0082f4'), ('active', '#88c2f5')])
+            self.configTema = config.awlight
+            self.parent.configure(bg=self.configTema['mainBg'])
+        #self.__lbl_normal.config(background=self.configTema['bgLabelNormal'])
+        self.__week_widget.set_theme()
+        self.__month_widget.set_theme()
+        self.__new_event_widget.set_theme()
 
 
 if __name__ == '__main__':

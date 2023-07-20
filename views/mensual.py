@@ -1,10 +1,6 @@
 import tkinter as tk
-from PIL import ImageTk, Image
-from tkinter import ttk, END, messagebox
+from tkinter import ttk
 from datetime import datetime
-from calendar import Calendar
-from tkcalendar import Calendar as tkCalendar
-from Archivo import BaseDeDatos
 from db_context.evento_dao import EventoDao
 from themes import config
 from views.calendario import Calendario
@@ -13,7 +9,6 @@ from views.evento import VistaEvento
 class MonthWidget(ttk.Frame):
     def __init__(self, parent, rows=None, controller=None):
         super().__init__(parent, style='WeekFrame.TFrame', padding=1)
-        #self.grid(row=0, column=0, sticky='nsew')
         parent.columnconfigure(0, weight=1)
         parent.rowconfigure(0, weight=1)
         self.controller = controller
@@ -80,14 +75,12 @@ class VistaMensual(ttk.Frame):
 
     def __init__(self, parent, gui=None):
         super().__init__(parent, padding=(0))
-        #self.grid(row=0, column=0, sticky='nsew')
         parent.columnconfigure(0, weight=1)
         parent.rowconfigure(0, weight=1)
         self.__gui = gui
         self.__fechaActualDT = datetime.today()
         self.__anioActual = int(self.__fechaActualDT.strftime('%Y'))
         self.__mesActual = int(self.__fechaActualDT.strftime('%m'))
-        self.__db = BaseDeDatos('EventosDB.csv')
         self.__cal = Calendario()
         self.__mes = self.__cal.matrizMensual(self.__anioActual, self.__mesActual)
         self.__tablas_con_eventos = []
@@ -106,9 +99,7 @@ class VistaMensual(ttk.Frame):
         self.__lblNombreMes.grid(column=1, row=0, columnspan=1, padx=0, pady=5)
         self.__mesFrame = ttk.Frame(self, padding=5)
         self.__five_row_month = MonthWidget(self.__mesFrame, rows=5, controller=self.__gui)
-        #self.__five_row_month.grid()
         self.__six_row_month = MonthWidget(self.__mesFrame, rows=6, controller=self.__gui)
-        #self.__six_row_month.grid()
         if len(self.__mes) == 6:
             self.__current_month_widget = self.__six_row_month
         else:
@@ -143,13 +134,8 @@ class VistaMensual(ttk.Frame):
                 header['background'] = self.__gui.configTema['bgNoDiaMes']
             if date == self.__fechaActualDT.date():
                 header['background'] = self.__gui.configTema['bgHoy']
-            #eventos_del_dia = dias_con_eventos.get(date.strftime('%d-%m'))
             eventos_del_dia = EventoDao.seleccionar_fecha(fecha=date.strftime('%Y-%m-%d'))
-            #print(f'EVENTOS DEL DIA {date.strftime("%d-%m")} VISTA MENSUAL:')
             if eventos_del_dia:
-                #print('EVENTOS DEL DIA VISTA MENSUAL:')
-               #for evento in eventos_del_dia:
-                #print(eventos_del_dia.titulo)
                 body.grid_remove()
                 self.__insertarEventosEnTabla(table=table, datos=eventos_del_dia)
             else:
@@ -199,7 +185,6 @@ class VistaMensual(ttk.Frame):
 
     def __anterior(self):
         """Permite generar gráficamente los widgets del mes anterior."""
-        #self.__mesFrame.grid_remove()
         self.__current_month_widget.grid_remove()
         if self.__mesActual - 1 < 1:
             self.__anioActual -= 1
@@ -208,20 +193,15 @@ class VistaMensual(ttk.Frame):
             self.__mesActual -= 1
         self.__mes = self.__cal.matrizMensual(self.__anioActual, self.__mesActual)
         self.__lblNombreMes['text'] = self.__cal.nombreDelMes(self.__mesActual, 1) + ' - ' + str(self.__anioActual)
-        #self.__mesFrame = ttk.Frame(self, padding=5, borderwidth=2, relief="groove")
-        #self.__mostrarMes(self.__mesFrame, self.__mesActual).grid()
         if len(self.__mes) == 6:
             self.__current_month_widget = self.__six_row_month
         else:
             self.__current_month_widget = self.__five_row_month
         self.__show_month(self.__current_month_widget, height=3)
         self.__change_colors(self.__current_month_widget)
-        #self.__mesFrame.grid(column=0, row=1, columnspan=3, pady=0, padx=0)
-        #self.__mesFrame.grid(column=0, row=1, columnspan=3, pady=5, padx=5)
 
     def __siguiente(self):
         """Permite generar gráficamente los widgets del mes siguiente."""
-        #self.__mesFrame.grid_remove()
         self.__current_month_widget.grid_remove()
         if self.__mesActual + 1 > 12:
             self.__anioActual += 1
@@ -230,20 +210,15 @@ class VistaMensual(ttk.Frame):
             self.__mesActual += 1
         self.__mes = self.__cal.matrizMensual(self.__anioActual, self.__mesActual)
         self.__lblNombreMes['text'] = self.__cal.nombreDelMes(self.__mesActual, 1) + ' - ' + str(self.__anioActual)
-        #self.__mesFrame = ttk.Frame(self, padding=5, borderwidth=2, relief="groove")
-        #self.__mostrarMes(self.__mesFrame, self.__mesActual).grid()
         if len(self.__mes) == 6:
             self.__current_month_widget = self.__six_row_month
         else:
             self.__current_month_widget = self.__five_row_month
         self.__show_month(self.__current_month_widget, height=3)
         self.__change_colors(self.__current_month_widget)
-        #self.__mesFrame.grid(column=0, row=1, columnspan=3, pady=0, padx=0)
-        #self.__mesFrame.grid(column=0, row=1, columnspan=3, pady=5, padx=5)
 
     def set_theme(self):
         self.__change_colors(self.__current_month_widget)
-        #self.__change_colors(self.__five_row_month)
 
     def __change_colors(self, month_widget):
         for col in month_widget.column_headers:
@@ -251,7 +226,6 @@ class VistaMensual(ttk.Frame):
             col.config(foreground=self.__gui.configTema['fgText'])
 
         widgets = zip(month_widget.days_header, month_widget.days_content)
-        #print(f'Fecha actual {self.__fechaActualDT.strftime("%d-%-m")}')
         for header, body in widgets:
             if header['text'].split('-')[1] == str(self.__mesActual):
                 if header['text'] == self.__fechaActualDT.strftime('%d-%-m'):
@@ -264,8 +238,8 @@ class VistaMensual(ttk.Frame):
             body.config(background=self.__gui.configTema['bgSinEventos'])
             body.config(foreground=self.__gui.configTema['fgText'])
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
         class Gui:
             configTema = config.awdark
 
