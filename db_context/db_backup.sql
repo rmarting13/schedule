@@ -40,7 +40,7 @@ CREATE TABLE `etiquetas` (
 
 LOCK TABLES `etiquetas` WRITE;
 /*!40000 ALTER TABLE `etiquetas` DISABLE KEYS */;
-INSERT INTO `etiquetas` VALUES (1,'amigos'),(2,'reunion'),(3,'celebracion'),(4,'familia'),(5,'celebracion'),(6,'cumpleaños'),(7,'salud'),(8,'turno'),(9,'upateco'),(10,'universidad'),(11,'examen'),(12,'clase'),(13,'upateco'),(14,'universidad'),(15,'upateco'),(16,'clase'),(17,'universidad'),(18,'unsa'),(19,'universidad'),(20,'unsa'),(21,'examen'),(22,'tarjeta');
+INSERT INTO `etiquetas` VALUES (1,'amigos'),(2,'reunion'),(3,'celebracion'),(4,'familia'),(6,'cumpleaños'),(7,'salud'),(8,'turno'), (9,'upateco'),(10,'universidad'), (11,'examen'),(12,'clase'),(16,'clase'),(18,'unsa'),(22,'tarjeta');
 /*!40000 ALTER TABLE `etiquetas` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -102,7 +102,7 @@ CREATE TABLE `eventos_etiquetas` (
 
 LOCK TABLES `eventos_etiquetas` WRITE;
 /*!40000 ALTER TABLE `eventos_etiquetas` DISABLE KEYS */;
-INSERT INTO `eventos_etiquetas` VALUES (1,1,1),(2,1,2),(3,1,3),(4,2,4),(5,2,5),(6,2,6),(7,3,7),(8,3,8),(9,4,9),(10,4,10),(11,4,11),(12,5,12),(13,5,13),(14,5,14),(15,6,15),(16,6,16),(17,6,17),(18,7,18),(19,7,19),(20,8,20),(21,8,21),(22,9,22);
+INSERT INTO `eventos_etiquetas` VALUES (1,1,1),(2,1,2),(3,1,3),(4,2,4),(5,2,3),(6,2,6),(7,3,7),(8,3,8),(9,4,9),(10,4,10),(11,4,11),(12,5,12),(13,5,9),(14,5,10),(15,6,9),(16,6,16),(17,6,10),(18,7,18),(19,7,10),(20,8,18),(21,8,11),(22,9,22);
 /*!40000 ALTER TABLE `eventos_etiquetas` ENABLE KEYS */;
 UNLOCK TABLES;
 

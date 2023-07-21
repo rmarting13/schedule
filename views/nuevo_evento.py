@@ -427,12 +427,16 @@ class NuevoEventoVista(ttk.Frame):
                         EventoEtiquetaDao.insertar(id_evento=id_evento, id_etiqueta=tag)
             else:  # Creación de un evento nuevo
                 id_evento = EventoDao.insertar(evento)
-                if len(old_tags) > 0:  # si se seleccionaron etiquetas existentes
-                    map(lambda x: EventoEtiquetaDao.insertar(id_evento=id_evento, id_etiqueta=x), old_tags)
-            if len(new_tags) > 0: # si se crearon nuevas etiquetas (se ejecuta tanto para actualización como nuevo evento)
-                id_etiquetas_insertadas = list(map(lambda x: EtiquetaDao.insertar(Etiqueta(nombre=x[1])), new_tags))  # etiqueta nueva
-                for id_tag in id_etiquetas_insertadas:
-                    EventoEtiquetaDao.insertar(id_evento=id_evento, id_etiqueta=id_tag)  # nuevas relaciones en la tabla eventos_etiquetas
+                while old_tags: # si se seleccionaron etiquetas existentes, se procede a insertarlas en la tabla intermedia eventos_etiquetas
+                    EventoEtiquetaDao.insertar(id_evento=id_evento, id_etiqueta=old_tags.pop()[0])
+            while new_tags:
+                id_etiqueta_insertada = EtiquetaDao.insertar(Etiqueta(nombre=new_tags.pop()[1]))
+                EventoEtiquetaDao.insertar(id_evento=id_evento, id_etiqueta=id_etiqueta_insertada)
+
+            # if len(new_tags) > 0: # si se crearon nuevas etiquetas (se ejecuta tanto para actualización como nuevo evento)
+            #     id_etiquetas_insertadas = list(map(lambda x: EtiquetaDao.insertar(Etiqueta(nombre=x[1])), new_tags))  # etiqueta nueva
+            #     for id_tag in id_etiquetas_insertadas:
+            #         EventoEtiquetaDao.insertar(id_evento=id_evento, id_etiqueta=id_tag)  # nuevas relaciones en la tabla eventos_etiquetas
 
             if self.__id:
                 messagebox.showinfo(title="Aviso", message="Evento actualizado con éxito!")
