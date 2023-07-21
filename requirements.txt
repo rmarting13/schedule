@@ -1,4 +1,6 @@
 Babel==2.12.1
+mysql-connector-python==8.0.33
 Pillow==10.0.0
+protobuf==3.20.3
+tk==0.1.0
 tkcalendar==1.6.1
-mysql-connector-python~=8.0.33
